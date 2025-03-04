@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo>
+<odoo noupdate="1">
     <!-- Units -->
     <record model='uom.uom' id='uom.product_uom_unit'>
         <field name='l10n_py_dnit_code'>77</field>

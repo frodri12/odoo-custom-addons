@@ -46,20 +46,20 @@ Demo data for testing:
     'auto_install': ['account'],
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
 
         'data/res_country_state_data.xml',
         'data/uom_uom_data.xml',
         'data/res.country.csv',
 
-        'views/uom_uom_views.xml',
+        'views/uom_uom_view.xml',
         
         'views/views.xml',
         'views/templates.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
-        'demo/demo_company.xml',
+        #'demo/demo_company.xml',
     ],
     'license': 'LGPL-3',
     'pre_init_hook': '_set_change_values',

@@ -14,6 +14,8 @@
             "console": "integratedTerminal",
             "args": [
                 "--config=/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/odoo18.conf",
+                "--update=l10n_py",
+                "--dev=all",
             ],
         }
     ]
