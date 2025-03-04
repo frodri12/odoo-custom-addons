@@ -51,6 +51,7 @@ Demo data for testing:
         'data/res_country_state_data.xml',
         'data/uom_uom_data.xml',
         'data/res.country.csv',
+        'data/l10n_py_district_data.xml',
 
         'views/uom_uom_view.xml',
         
