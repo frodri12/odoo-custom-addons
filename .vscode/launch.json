@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Odoo 18 Developer",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/opt/Odoo/odoo-18.0.developer/odoo-bin",
+            "python": "/opt/Odoo/odoo-18.0.developer/odoo-venv/bin/python3",
+            "console": "integratedTerminal",
+            "args": [
+                "--config=/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/odoo18.conf",
+            ],
+        }
+    ]
+}
