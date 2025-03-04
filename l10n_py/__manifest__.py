@@ -58,6 +58,7 @@ Demo data for testing:
 
         'views/uom_uom_view.xml',
         'views/res_partner_view.xml',
+        'views/res_country_view.xml',
         
         'views/views.xml',
         'views/templates.xml',
