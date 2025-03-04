@@ -57,6 +57,8 @@ Demo data for testing:
         'data/l10n_py_city_data03.xml',
         'data/res_currency_data.xml',
         'data/res_users_data.xml',
+        'data/res_partner_data.xml',
+        'data/l10n_latam_identification_type_data.xml',
 
         'views/uom_uom_view.xml',
         'views/res_partner_view.xml',
