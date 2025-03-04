@@ -57,6 +57,7 @@ Demo data for testing:
         'data/l10n_py_city_data03.xml',
 
         'views/uom_uom_view.xml',
+        'views/res_partner_view.xml',
         
         'views/views.xml',
         'views/templates.xml',
