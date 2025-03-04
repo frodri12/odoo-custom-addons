@@ -41,10 +41,9 @@
                 </xpath>
 
                 <!-- ESTABLECIMIENTO -->
-                <!-- 
                 <field name="currency_id" position="after">
-                    <field name="l10n_py_establecimiento" invisible="country_code != 'PY'"/>
-                </field>-->
+                    <field name="l10n_py_dnit_organization" invisible="country_code != 'PY'"/>
+                </field>
 
                 <!-- 
                 <field name="vat" position="after">

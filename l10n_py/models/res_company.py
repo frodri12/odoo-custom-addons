@@ -16,6 +16,8 @@ class Company(models.Model):
     l10n_py_city_id = fields.Many2one(
         "l10n_py_city", compute='_compute_address', inverse='_inverse_cityId')
 
+    l10n_py_dnit_organization = fields.Integer("Organization", default = 1)
+
     def _get_company_address_field_names(self):
         """ Return a list of fields coming from the address partner to match
         on company address fields. Fields are labeled same on both models. """
