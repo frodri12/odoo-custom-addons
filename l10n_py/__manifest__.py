@@ -59,18 +59,20 @@ Demo data for testing:
         'data/res_users_data.xml',
         'data/res_partner_data.xml',
         'data/l10n_latam_identification_type_data.xml',
+        'data/l10n_latam_document_type_data.xml',
 
         'views/uom_uom_view.xml',
         'views/res_partner_view.xml',
         'views/res_country_view.xml',
         'views/res_company_view.xml',
+        'views/account_journal_view.xml',
         
         'views/views.xml',
         'views/templates.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
-        #'demo/demo_company.xml',
+        'demo/demo_company.xml',
     ],
     'license': 'LGPL-3',
     'pre_init_hook': '_set_change_values',

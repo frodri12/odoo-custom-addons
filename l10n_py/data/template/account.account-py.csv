@@ -83,7 +83,7 @@ base_venta_de_servicios,4.1.1.01.020,income,Sale of services,False,Venta de serv
 base_resultado_intereses_ganados,4.2.1.01.010,income_other,Interest earned,False,Intereses ganados
 base_diferencias_de_cambio,4.2.1.01.020,income_other,Exchange differences,False,Diferencias de cambio
 base_ajuste_por_redondeo,4.2.1.01.030,income_other,Rounding adjustment,False,Ajuste por redondeo
-base_resultado_venta_bienes_de_uso,4.3.1.01.010,income_other,Profit/(loss) on sale of property, plant and equipment,False,Resultado venta bienes de uso
+base_resultado_venta_bienes_de_uso,4.3.1.01.010,income_other,"Profit/(loss) on sale of property, plant and equipment",False,Resultado venta bienes de uso
 base_recupero_de_gastos,4.3.1.01.020,income_other,Cost recovery,False,Recupero de gastos
 base_aportes_no_reembolsables,4.3.1.01.030,income_other,Non-reimbursable contributions (subsidies),False,Aportes no reeombolsables (subsidios)
 base_cmv,5.1.1.01.010,expense,Cost of Goods Sold,False,Costo de Mercadería Vendida

@@ -3,15 +3,15 @@
     <record id="base.partner_demo_company_py" model="res.partner" forcecreate="1">
         <field name="name">PY Company</field>
         <field name='l10n_latam_identification_type_id' ref='it_ruc' />
-        <field name="vat">12345-0</field>
-        <field name='state_id' ref="l10n_py.state_py_1" />
+        <field name="vat">1234567-0</field>
+        <field name='state_id' ref="state_py_1" />
         <field name="street">Calle Falsa 123</field>
         <field name="city">Asuncion</field>
         <field name="country_id" ref="base.py" />
         <field name="zip">1000</field>
-        <field name="phone">+595 94 231 234</field>
-        <field name="email">info@company.uyexample.com</field>
-        <field name="website">www.uyexample.com</field>/tmp/l10n_py /tmp/l10n_py_edi
+        <field name="phone">+595 94 231 2345</field>
+        <field name="email">info@company.pyexample.com</field>
+        <field name="website">www.pyexample.com</field>
         <field name="is_company" eval="True" />
     </record>
 
@@ -29,10 +29,12 @@
         <value eval="{'company_ids': [(4, ref('base.demo_company_py'))]}" />
     </function>
 
+
     <function model="account.chart.template" name="try_loading">
         <value eval="[]" />
         <value>py</value>
         <value model="res.company" eval="obj().env.ref('base.demo_company_py')" />
         <value name="install_demo" eval="True" />
     </function>
+
 </odoo>
