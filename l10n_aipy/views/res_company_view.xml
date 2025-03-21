@@ -45,6 +45,28 @@
                     <field name="l10n_aipy_dnit_organization" invisible="country_code != 'PY'"/>
                 </field>
 
+                <xpath expr="//page[1]" position="after">
+                    <page string="DNIT" invisible="country_code != 'PY'">
+                        <group>
+                            <group>
+                                <field name="l10n_aipy_enable_edi" />
+                            </group>
+                            <group>
+                                <field name="l10n_aipy_testing_mode" />
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="l10n_aipy_dnit_auth_code" />
+                                <field name="l10n_aipy_dnit_auth_date" />
+                            </group>
+                            <group>
+                                <field name="l10n_aipy_dnit_auth_code_test" />
+                                <field name="l10n_aipy_dnit_auth_date_test" />
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
                 <!-- 
                 <field name="vat" position="after">
                     <field name="l10n_aipy_set_responsibility_type_id" options="{'no_open': True, 'no_create': True}"

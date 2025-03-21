@@ -12,7 +12,7 @@ class AccountChartTemplate(models.AbstractModel):
 
     _inherit = "account.chart.template"
 
-    def _post_load_demo_data(self, company=False):
+    def _post_load_demo_data(self, company):
         if company.account_fiscal_country_id.code != "PY":
             return super()._post_load_demo_data(company)
 

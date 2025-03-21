@@ -42,15 +42,17 @@ class AccountChartTemplate(models.AbstractModel):
         return {
             'sale': {
                 "name": _("Customer Invoices"),
-                "code": "0001",
+                "code": "001",
                 "l10n_latam_use_documents": True,
-                "refund_sequence": False,
+                "refund_sequence": True,
+                "debit_sequence": True,
             },
             'purchase': {
                 "name": _("Vendor Bills"),
-                "code": "0002",
+                "code": "002",
                 "l10n_latam_use_documents": True,
-                "refund_sequence": False,
+                "refund_sequence": True,
+                "debit_sequence": True,
             },
         }
 
