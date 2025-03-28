@@ -7,6 +7,7 @@ from datetime import datetime
 
 import logging
 import pytz
+import json
 
 _logger = logging.getLogger(__name__)
 
@@ -114,6 +115,32 @@ class AccountMove(models.Model):
         if self.l10n_latam_document_type_id.code == 'FA' and tipoTransaccion != 0:
             self._setD("tipoTransaccion", tipoTransaccion) #D011
         return items
+
+    def _compute_economic_activity( self):
+        ecos = []
+        for rec in self.company_id.l10n_aipy_economic_activity_ids:
+            eco = {}
+            eco.update({"codigo": rec.code})
+            eco.update({"descripcion": rec.name})
+            ecos.append(eco)
+        return ecos
+                
+                
     #############################
 
 
+    def dnit_generate_json( self):
+        """
+        Generate the JSON file for the DNIT
+        """
+        # Initialize data
+        self._initialize_data()
+        # Set Params
+        self._setP("actividadesEconomicas", self._compute_economic_activity())
+        # Set Data
+        self._setD("items", self._compute_statement_lines())
+        #
+        _logger.info( "----- JSON PARAMS ----")
+        _logger.warning( "\n -- PARAMS -- \n" + json.dumps(_params, indent=4) + "\n")
+        _logger.info( "----- JSON DATA ----")
+        _logger.warning( "\n -- DATA -- \n" + json.dumps(_data, indent=4) + "\n")

@@ -68,6 +68,7 @@ Demo data for testing:
         'views/account_journal_view.xml',
         'views/account_tax_view.xml',
         'views/account_move_view.xml',
+        'views/l10n_aipy_economic_activity_view.xml',
         
         'views/views.xml',
         'views/templates.xml',

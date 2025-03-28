@@ -30,7 +30,8 @@
 
                     <field name="state_id" class="o_address_state" placeholder="Department"
                         options="{&quot;no_open&quot;: True}" invisible="country_id != 185" />
-                    <field name="l10n_aipy_district_id" placeholder="District" class="o_address_state"
+                    <field name="l10n_aipy_district_id" placeholder="District"
+                        class="o_address_state"
                         options="{&quot;no_open&quot;: True}" invisible="country_id != 185" />
                     <field name="l10n_aipy_city_id" placeholder="City" class="o_address_zip"
                         invisible="country_id != 185" />
@@ -42,7 +43,7 @@
 
                 <!-- ESTABLECIMIENTO -->
                 <field name="currency_id" position="after">
-                    <field name="l10n_aipy_dnit_organization" invisible="country_code != 'PY'"/>
+                    <field name="l10n_aipy_dnit_organization" invisible="country_code != 'PY'" />
                 </field>
 
                 <xpath expr="//page[1]" position="after">
@@ -65,6 +66,9 @@
                                 <field name="l10n_aipy_dnit_auth_date_test" />
                             </group>
                         </group>
+                    </page>
+                    <page string="Economic Activity" invisible="country_code != 'PY'">
+                        <field name="l10n_aipy_economic_activity_ids" />
                     </page>
                 </xpath>
                 <!-- 

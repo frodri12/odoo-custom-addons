@@ -11,3 +11,4 @@ class ResCountry(models.Model):
     l10n_aipy_alpha_number = fields.Char(
         'ISO Number'
     )
+    

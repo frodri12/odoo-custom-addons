@@ -2,7 +2,7 @@
 
 from odoo import models, fields
 
-class L10nPyDistrict(models.Model):
+class L10nAiPyDistrict(models.Model):
 
     _name = "l10n_aipy_district"
     _description = "Paraguay - Districts"

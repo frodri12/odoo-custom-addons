@@ -26,6 +26,12 @@ class Company(models.Model):
     l10n_aipy_dnit_auth_code_test = fields.Char("Numero de Timbrado (Test)")
     l10n_aipy_dnit_auth_date_test = fields.Date("Fecha del Timbrado (Test)")
 
+    l10n_aipy_economic_activity_ids = fields.One2many(
+        'l10n_aipy.economic.activity', 'company_id',
+        string='Economic Activities',
+        help='Economic activities associated with the country'
+    )
+
     def _get_company_address_field_names(self):
         """ Return a list of fields coming from the address partner to match
         on company address fields. Fields are labeled same on both models. """
