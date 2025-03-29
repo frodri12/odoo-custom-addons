@@ -32,6 +32,13 @@ class Company(models.Model):
         help='Economic activities associated with the country'
     )
 
+    l10n_aipy_fantasy_name = fields.Char( string='Fantasy Name')
+
+    l10n_aipy_regime_type_id = fields.Many2one(
+        'l10n_aipy.regime.type', string='Regime Type',
+        help='Regime type associated with the company'
+    )
+
     def _get_company_address_field_names(self):
         """ Return a list of fields coming from the address partner to match
         on company address fields. Fields are labeled same on both models. """

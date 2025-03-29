@@ -60,6 +60,7 @@ Demo data for testing:
         'data/res_partner_data.xml',
         'data/l10n_latam_identification_type_data.xml',
         'data/l10n_latam_document_type_data.xml',
+        'data/l10n_aipy_regime_type_data.xml',
 
         'views/uom_uom_view.xml',
         'views/res_partner_view.xml',

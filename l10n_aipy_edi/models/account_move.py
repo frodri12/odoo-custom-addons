@@ -125,6 +125,28 @@ class AccountMove(models.Model):
             ecos.append(eco)
         return ecos
                 
+    def _compute_estabecimientos( self):
+        estabecimientos = []
+        est = {}
+        est.update({"codigo": self.company_id.l10n_aipy_dnit_organization})
+        est.update({"direccion": self.company_id.street}) #D107
+        est.update(
+            {"numeroCasa": self.company_id.l10n_aipy_house if self.company_id.l10n_aipy_house else 0}) #D108
+        if self.company_id.street2:
+            est.update({"complementoDireccion1": self.company_id.street2}) #D109
+        est.update({"departamento": self.company_id.state_id.code}) #D111
+        est.update({"ciudad": self.company_id.l10n_aipy_city_id.code}) #D115
+        est.update({"distrito": self.company_id.l10n_aipy_district_id.code}) #D113
+        est.update({"telefono": self.company_id.phone}) #D117
+        est.update({"email": self.company_id.email}) #D118
+        estabecimientos.append(est)
+        return estabecimientos
+                
+    def _compute_regimeType( self):
+        if self.company_id.l10n_aipy_regime_type_id:
+            value = self.company_id.l10n_aipy_regime_type_id.code
+            if value > 0:
+                self._setP("tipoRegimen", value)
                 
     #############################
 
@@ -136,7 +158,19 @@ class AccountMove(models.Model):
         # Initialize data
         self._initialize_data()
         # Set Params
+        self._setP("ruc", self.company_id.vat) #D102
+        self._setP("tipoContribuyente", 1 if self.company_id.partner_id.company_type == 'person' else 2) #D103
+        self._setP("razonSocial", self.company_id.name) #D105
+        if self.company_id.l10n_aipy_fantasy_name:
+            self._setP("nombreFantasia", self.company_id.l10n_aipy_fantasy_name) #D106
+        if self.company_id.l10n_aipy_testing_mode:
+            self._setP("nombreFantasia", self.company_id.name)
+            self._setP("razonSocial", "DE generado en ambiente de prueba - sin valor comercial ni fiscal") #D105
+        self._compute_regimeType()
+
         self._setP("actividadesEconomicas", self._compute_economic_activity())
+        self._setP("establecimientos", self._compute_estabecimientos())
+
         # Set Data
         self._setD("items", self._compute_statement_lines())
         #
