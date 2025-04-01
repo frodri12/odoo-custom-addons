@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='cash_basis_transition_account_id']" position="after">
                 <field name="l10n_aipy_tax_base" invisible="country_code != 'PY'" />
+                <field name="l10n_aipy_tax_type" invisible="country_code != 'PY'" />
             </xpath>
         </field>
     </record>
