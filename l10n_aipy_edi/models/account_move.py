@@ -9,6 +9,7 @@ import logging
 import pytz
 import json
 import re
+import subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -159,15 +160,15 @@ class AccountMove(models.Model):
     def _compute_estabecimientos( self):
         estabecimientos = []
         est = {}
-        est.update({"codigo": self.company_id.l10n_aipy_dnit_organization})
+        est.update({"codigo": "%03d" % int(self.company_id.l10n_aipy_dnit_organization)})
         est.update({"direccion": self.company_id.street}) #D107
         est.update(
             {"numeroCasa": self.company_id.l10n_aipy_house if self.company_id.l10n_aipy_house else 0}) #D108
         if self.company_id.street2:
             est.update({"complementoDireccion1": self.company_id.street2}) #D109
-        est.update({"departamento": self.company_id.state_id.code}) #D111
-        est.update({"distrito": self.company_id.l10n_aipy_district_id.code}) #D113
-        est.update({"ciudad": self.company_id.l10n_aipy_city_id.code}) #D115
+        est.update({"departamento": int(self.company_id.state_id.code)}) #D111
+        est.update({"distrito": int(self.company_id.l10n_aipy_district_id.code)}) #D113
+        est.update({"ciudad": int(self.company_id.l10n_aipy_city_id.code)}) #D115
         telefono = self.company_id.phone
         if telefono:
             if telefono.__len__() < 6 or telefono.__len__() > 15:
@@ -300,6 +301,35 @@ class AccountMove(models.Model):
             cliente.update({"email": self.partner_id.email}) #D215
         return cliente
 
+    def _compute_factura( self):
+        factura = {}
+        factura.update({"presencia": 1}) #E011
+        return factura
+
+    def _compute_ncnd( self):
+        ncnd = {}
+        ncnd.update({"motivo": 2}) #E401
+        return ncnd
+
+    def _compute_remision( self):
+        remision = {}
+        remision.update({"motivo": 1}) #E501
+        #remision.update({"tipoResponsable": 1}) #E503
+        #remision.update({"kms": 1}) #E505
+        #remision.update({"fechaFactura": 1}) #E506
+        return remision
+
+    def _compute_condicion( self):
+        condicion = {}
+        condicion.update({"tipo": 2}) #E601 Credito
+        #
+        credito = {}
+        credito.update({"tipo": 1}) #E641
+        credito.update({"plazo": "30 dias"}) #E643
+
+        condicion.update({"credito": credito}) 
+        return condicion
+
     #############################
 
 
@@ -347,6 +377,13 @@ class AccountMove(models.Model):
             self._setD("condicionTipoCambio", 1) #D017
         #
         self._setD("cliente", self._compute_client())
+        if tipoDocumento == 'out_invoice':
+            self._setD("factura", self._compute_factura())
+            self._setD("condicion", self._compute_condicion())
+        if tipoDocumento == 'in_refund' or tipoDocumento == 'out_refund':
+            self._setD("notaCreditoDebito", self._compute_ncnd())
+        if tipoDocumento == 'in_refund':
+            self._setD("remision", self._compute_remision())
         #
         self._setD("items", self._compute_statement_lines())
         #
@@ -354,3 +391,9 @@ class AccountMove(models.Model):
         _logger.warning( "\n -- PARAMS -- \n" + json.dumps(_params, indent=4) + "\n")
         _logger.info( "----- JSON DATA ----")
         _logger.warning( "\n -- DATA -- \n" + json.dumps(_data, indent=4) + "\n")
+        with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/params.json', 'w') as f:
+            json.dump(_params, f, indent=4)
+        with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/data.json', 'w') as f:
+            json.dump(_data, f, indent=4)
+        p = subprocess.run('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/TestXML.sh', shell=True, capture_output=True, check=True, encoding='utf-8')
+        _logger.warning( "\n\n" + p.stdout)

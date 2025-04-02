@@ -11,8 +11,12 @@ class AccountMove(models.Model):
 
     _inherit = 'account.move'
 
+    l10n_aipy_inverse_currency_rate = fields.Float(string='Inverse Currency Rate', readonly=True, store=True,
+    compute="_compute_inverse_currency_rate", precompute=True, copy=False)
+
     l10n_aipy_random_code = fields.Char(string='Random Code', copy=False, readonly=True, store=True)
     
+
     @api.onchange('l10n_latam_document_type_id', 'l10n_latam_document_number')
     def _inverse_l10n_latam_document_number(self):
         super()._inverse_l10n_latam_document_number()
@@ -38,6 +42,21 @@ class AccountMove(models.Model):
                 else:
                     raise UserError(_('The document number can not be changed for this journal, you can only modify'
                                       ' the POS number if there is not posted (or posted before) invoices'))
+
+    @api.depends('currency_id','company_currency_id','company_id','invoice_date')
+    def _compute_inverse_currency_rate(self):
+        """ Compute the inverse currency rate for the move """
+        for move in self:
+            if move.is_invoice( include_receipts=True):
+                move.l10n_aipy_inverse_currency_rate = 1 / self.env['res.currency']._get_conversion_rate(
+                    from_currency=move.company_currency_id,
+                    to_currency=move.currency_id,
+                    company=move.company_id,
+                    date=move._get_invoice_currency_rate_date(),
+                )
+            else:
+                move.l10n_aipy_inverse_currency_rate = 1
+
 
     def _get_formatted_sequence(self, number=0):
         return "%s %03d-%03d-%07d" % (self.l10n_latam_document_type_id.doc_code_prefix,

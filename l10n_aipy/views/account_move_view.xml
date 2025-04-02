@@ -18,6 +18,18 @@
                 </page>
             </xpath>
 
+            <xpath expr="//div[@name='currency_conversion_div']" position="after">
+                <div name="inverse_currency_conversion_div" class="d-flex text-muted float-start"
+                    invisible="currency_id == company_currency_id">
+                    <span>1 </span>
+                    <field name="currency_id" readonly="1" options="{'no_open': True}" />
+                    <span> = </span>
+                    <field name="l10n_aipy_inverse_currency_rate" digits="[12,2]" readonly="1" />
+                    <span> </span>
+                    <field name="company_currency_id" readonly="1" options="{'no_open': True}" />
+                </div>
+            </xpath>
+
         </field>
     </record>
 </odoo>
