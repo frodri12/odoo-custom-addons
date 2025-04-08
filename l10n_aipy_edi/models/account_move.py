@@ -1,24 +1,79 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from random import randint
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import logging
 import pytz
 import json
 import re
 import subprocess
+import xml.dom.minidom
+import requests
 
 _logger = logging.getLogger(__name__)
 
 _params = {}
 _data = {}
+_random_code = "0000000000"
 
 class AccountMove(models.Model):
 
     _inherit = 'account.move'
+
+    l10n_aipy_response_cdc = fields.Char(string='Response CDC', readonly=True, tracking=True)
+    
+    l10n_aipy_response_codres = fields.Char(string='Response Code', readonly=True, tracking=True)
+    l10n_aipy_response_mesres = fields.Text(string='Response Message', readonly=True, tracking=True)
+    l10n_aipy_response_fecproc = fields.Datetime(string='Response Date', readonly=True)
+
+    l10n_aipy_request_json = fields.Text(string='Request JSON', readonly=True)
+    l10n_aipy_response_json = fields.Text(string='Response JSON', readonly=True)
+
+    #############################
+
+    def _create_notification( self, title, type, body):
+        message = {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'type': type,
+                'message': body,
+                'sticky': False,
+                #'next': {'type': 'ir.actions.act_window_close'}
+            },
+        }
+        return message
+
+    def _get_url( self, key):
+        sKey = 'aipy_edi.url.' + key + '.test' if self.company_id.l10n_aipy_testing_mode else '.prod'
+
+        ICP = self.env['ir.config_parameter'].sudo()
+        sRet = str(ICP.get_param(sKey))
+        return sRet
+
+    ### Convierte un string en formato 2019-03-01T10:23:53-03:00
+    ### a un string UTC en formato 2019-03-01T13:23:53
+    ### Solo esta soportado -03:00 y -04:00
+    def _convert_date_to_utc(self, date):
+        d1 = date.split("T")[0]
+        d2 = date.split("T")[1]
+        d3 = d2[8:]
+        d2 = d2[0:8]
+        tzname = 'UTC'
+        if d3 == '-03:00':
+            tzname = 'America/Buenos_Aires'
+        elif d3 == '-04:00':
+            tzname = 'America/Asuncion'
+        dt = datetime.strptime(d1 + " " + d2, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo(tzname))
+        return dt.astimezone(ZoneInfo('UTC')).isoformat(timespec='seconds').replace("+00:00", "")
+
+    #############################
+
 
     #############################
     def _initialize_data( self):
@@ -55,12 +110,13 @@ class AccountMove(models.Model):
         number_max = (10**pin_length) - 1
         number = randint( 0, number_max)
         delta = (pin_length - len(str(number))) * '0'
-        random_code = '%s%s' % (delta,number)
-        condition = self._validate_random_code( random_code)
+        _random_code = '%s%s' % (delta,number)
+        
+        condition = self._validate_random_code( _random_code)
         if condition:
             self._generate_random_code()
-        l10n_aipy_random_code = random_code
-        return random_code
+        self.l10n_aipy_random_code = _random_code
+        return _random_code
     #############################
 
     def _compute_statement_lines( self):
@@ -180,7 +236,7 @@ class AccountMove(models.Model):
         email = self.company_id.email
         if email:
             if email.find(",") > -1:
-                est.update({"email": email.splat(",")[0]}) #D118
+                est.update({"email": email.split(",")[0]}) #D118
             else:
                 est.update({"email": email}) #D118
         else:
@@ -249,7 +305,7 @@ class AccountMove(models.Model):
         distrito = self.partner_id.l10n_aipy_district_id.code
         ciudad = self.partner_id.l10n_aipy_city_id.code
         if self.partner_id.vat:
-            if self.partner_id.l10n_latam_identification_type_id.l10n_aipy_dnit_code == 0 and pais == "PRY":
+            if self.partner_id.l10n_latam_identification_type_id.l10n_aipy_dnit_code == "0" and pais == "PRY":
                 cliente.update({"ruc": self.partner_id.vat}) #D206
                 cliente.update({"contribuyente": True}) #D201
             else:
@@ -258,8 +314,12 @@ class AccountMove(models.Model):
                     cliente.update(
                         {"documentoTipo": self.partner_id.l10n_latam_identification_type_id.l10n_aipy_dnit_code}) #D208
                     cliente.update({"documentoNumero": self.partner_id.vat}) #D210
+                else:
+                    cliente.update({"documentoTipo": 9}) #D208
+                    cliente.update({"documentoNumero": self.partner_id.vat}) #D210
+                    cliente.update({"documentoTipoDescripcion": self.partner_id.l10n_latam_identification_type_id.name}) #D209
 
-        if self.partner_id.l10n_latam_identification_type_id.l10n_aipy_dnit_code == 0:
+        if self.partner_id.l10n_latam_identification_type_id.l10n_aipy_dnit_code == "0":
             if self.partner_id.is_company:
                 cliente.update({"tipoOperacion": 1}) #D202 B2B
                 cliente.update({"tipoContribuyente": 2}) #D205 Persona Juridica
@@ -273,7 +333,7 @@ class AccountMove(models.Model):
                 cliente.update({"tipoOperacion": 2}) #D202 B2C
                 cliente.update({"tipoContribuyente": 1}) #D205 Persona Fisica
             else:
-                cliente.update({"tipoOperacion": 2}) #D202 B2F
+                cliente.update({"tipoOperacion": 4}) #D202 B2F
                 cliente.update({"tipoContribuyente": 2 if self.partner_id.is_company else 1}) #D205
 
         razonSocial = self.partner_id.name
@@ -284,15 +344,20 @@ class AccountMove(models.Model):
 
         # Direccion
         cliente.update({"pais": pais}) #D203
-        if departamento and distrito and ciudad and pais == 'PRY':
-            cliente.update({"departamento": departamento}) #D219
-            cliente.update({"distrito": distrito}) #D221
-            cliente.update({"ciudad": ciudad}) #D223
-            cliente.update({"direccion": self.partner_id.street}) #D213
-            cliente.update({"numeroCasa": self.partner_id.l10n_aipy_house if self.partner_id.l10n_aipy_house else 0}) #D218
+        if pais == 'PRY':
+            if departamento and distrito and ciudad and pais == 'PRY':
+                cliente.update({"departamento": departamento}) #D219
+                cliente.update({"distrito": distrito}) #D221
+                cliente.update({"ciudad": ciudad}) #D223
+                cliente.update({"direccion": self.partner_id.street}) #D213
+                cliente.update({"numeroCasa": self.partner_id.l10n_aipy_house if self.partner_id.l10n_aipy_house else 0}) #D218
+            else:
+                cliente.update({"direccion": self.partner_id.street}) #D213
+                cliente.update({"numeroCasa": self.partner_id.l10n_aipy_house if self.partner_id.l10n_aipy_house else 0}) #D218
         else:
             cliente.update({"direccion": self.partner_id.street}) #D213
             cliente.update({"numeroCasa": self.partner_id.l10n_aipy_house if self.partner_id.l10n_aipy_house else 0}) #D218
+            
         if self.partner_id.phone:
             cliente.update({"telefono": self.partner_id.phone}) #D214
         if self.partner_id.mobile:
@@ -331,7 +396,6 @@ class AccountMove(models.Model):
         return condicion
 
     #############################
-
 
     def dnit_generate_json( self):
         """
@@ -387,13 +451,107 @@ class AccountMove(models.Model):
         #
         self._setD("items", self._compute_statement_lines())
         #
-        _logger.info( "----- JSON PARAMS ----")
-        _logger.warning( "\n -- PARAMS -- \n" + json.dumps(_params, indent=4) + "\n")
-        _logger.info( "----- JSON DATA ----")
-        _logger.warning( "\n -- DATA -- \n" + json.dumps(_data, indent=4) + "\n")
-        with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/params.json', 'w') as f:
-            json.dump(_params, f, indent=4)
-        with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/data.json', 'w') as f:
-            json.dump(_data, f, indent=4)
-        p = subprocess.run('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/TestXML.sh', shell=True, capture_output=True, check=True, encoding='utf-8')
-        _logger.warning( "\n\n" + p.stdout)
+        self._cr.commit()
+
+        all = {}
+        all.update({"empresa": self.company_id.vat.split("-")[0]})
+        all.update({"servicio": "de"})
+        all.update({"idCSC1": self.company_id.l10n_aipy_idcsc1_test if self.company_id.l10n_aipy_testing_mode else self.company_id.l10n_aipy_idcsc1_prod})
+        all.update({"idCSC2": self.company_id.l10n_aipy_idcsc2_test if self.company_id.l10n_aipy_testing_mode else self.company_id.l10n_aipy_idcsc2_prod})
+        all.update({"produccion": not self.company_id.l10n_aipy_testing_mode})
+        all.update({"params": _params})
+        all.update({"data": _data})
+        self.l10n_aipy_request_json = json.dumps(all, indent=4)
+        #_logger.info( "\n -- JSON -- \n" + json.dumps(all, indent=4) + "\n")
+
+        #with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs/all.json', 'w') as f:
+        #    json.dump(_params, f, indent=4)
+        #with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs/data.json', 'w') as f:
+        #    json.dump(_data, f, indent=4)
+        #p = subprocess.run('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/TestXML.sh', shell=True, capture_output=True, check=True, encoding='utf-8')
+
+        #if p.stdout[0:5] == "<?xml":
+        #    dom = xml.dom.minidom.parseString(p.stdout)
+        #    pretty_xml_as_string = dom.toprettyxml()
+        #    _logger.info( "\n\n" + pretty_xml_as_string)
+        #    with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs/response.xml', 'w') as f:
+        #        f.write(pretty_xml_as_string)
+        #else:
+        #    _logger.info( "\n\n" + p.stdout)
+        
+        response = requests.post(
+            self._get_url("recibe"),  json=json.loads(json.dumps(all)), allow_redirects=False)    
+        if response.status_code == 301:
+            response = requests.post( response.headers['Location'],  json=json.loads(json.dumps(all)))
+        if response.status_code != 200:
+            _logger.error( "Error: %s" % str(response.status_code))
+            self.l10n_aipy_response_codres = str(response.status_code)
+            self.l10n_aipy_response_mesres = response.text
+        else:
+            self._json_responseDNIT(response)
+
+    def _json_responseDNIT( self, response_data):
+        """
+        Process the response from the DNIT
+        """
+        response = response_data.json()
+        self.l10n_aipy_response_json = json.dumps(response, indent=4)
+        self.l10n_aipy_response_fecproc = datetime.now()
+        if int(response['code']) != 0:
+            self.l10n_aipy_response_status = 'E'
+            self.l10n_aipy_response_codres = str(response['code'])
+            self.l10n_aipy_response_mesres = response.get("message")
+            msg = "Error: " + str(response['code']) + " " + str(response.get("message"))
+            self.message_post(body=msg, message_type='notification')
+            self._cr.commit()
+            #raise ValidationError(msg)
+            return self._create_notification( _('Warining!'), 'warning', msg)
+
+        dId = None # l10n_aipy_response_cdc  Se guarda como esta
+        dFecProc = None # l10n_aipy_response_fecproc  Convertir a UTC
+        dEstRes = None # l10n_aipy_response_status "Aprobado":"A","Rechazado":"R",else:"AO"
+        dProtAut = None # Por ahora no lo usamos
+        dCodRes = None # l10n_aipy_response_codres  pasar a entero
+        dMesRes = None # l10n_aipy_response_mesres  Se guarda como esta
+        payload = response.get("payload")
+        if payload and payload != None:
+            rRetEnviDe = payload.get("ns2:rRetEnviDe")
+            if rRetEnviDe and rRetEnviDe != None:
+                rProtDe = rRetEnviDe.get("ns2:rProtDe")
+                if rProtDe and rProtDe != None:
+                    dId = rProtDe.get("ns2:Id")
+                    dFecProc = self._convert_date_to_utc(rProtDe.get("ns2:dFecProc"))
+                    gResProc = rProtDe.get("ns2:gResProc")
+                    if gResProc and gResProc != None and str(type(gResProc)) == "<class 'dict'>":
+                        dEstRes = gResProc.get("ns2:dEstRes")
+                        dProtAut = gResProc.get("ns2:dProtAut")
+                        dCodRes = gResProc.get("ns2:dCodRes")
+                        dMesRes = gResProc.get("ns2:dMesRes")
+                    elif gResProc and gResProc != None and str(type(gResProc)) == "<class 'list'>":
+                        for rec in gResProc:
+                            dEstRes = rec.get("ns2:dEstRes")
+                            dProtAut = rec.get("ns2:dProtAut")
+                            dCodRes = rec.get("ns2:dCodRes")
+                            dMesRes = rec.get("ns2:dMesRes")
+        if dId != None:
+            self.l10n_aipy_response_cdc = dId
+        if dFecProc != None:
+            self.l10n_aipy_response_fecproc = datetime.strptime(dFecProc, "%Y-%m-%dT%H:%M:%S")
+        if dEstRes != None:
+            if dEstRes == "Aprobado":
+                self.l10n_aipy_response_status = 'A'
+            elif dEstRes == "Rechazado":
+                self.l10n_aipy_response_status = 'R'
+            else:
+                self.l10n_aipy_response_status = 'O'
+        if dCodRes != None:
+            self.l10n_aipy_response_codres = dCodRes
+        if dMesRes != None:
+            self.l10n_aipy_response_mesres = dMesRes
+        self._cr.commit()
+        msg = "Success: Documento " + str(dEstRes) + "[" + str(dCodRes) + "-" + str(dMesRes) + "] "
+        if self.l10n_aipy_response_status == 'R':
+            msg = "Warning: Documento " + str(dEstRes) + "[" + str(dCodRes) + "-" + str(dMesRes) + "] "
+        return self._create_notification( _('Success!') if self.l10n_aipy_response_status != 'R' else _('Warining!'), 'info', msg)
+
+        

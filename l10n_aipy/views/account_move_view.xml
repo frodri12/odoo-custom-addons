@@ -13,6 +13,7 @@
                             <field name="l10n_aipy_random_code" />
                         </group>
                         <group>
+                        <field name="l10n_aipy_response_status" />
                         </group>
                     </group>
                 </page>

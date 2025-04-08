@@ -62,10 +62,14 @@
                             <group>
                                 <field name="l10n_aipy_dnit_auth_code" />
                                 <field name="l10n_aipy_dnit_auth_date" />
+                                <field name="l10n_aipy_idcsc1_prod" />
+                                <field name="l10n_aipy_idcsc2_prod" />
                             </group>
                             <group>
                                 <field name="l10n_aipy_dnit_auth_code_test" />
                                 <field name="l10n_aipy_dnit_auth_date_test" />
+                                <field name="l10n_aipy_idcsc1_test" />
+                                <field name="l10n_aipy_idcsc2_test" />
                             </group>
                         </group>
                     </page>

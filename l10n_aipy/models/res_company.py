@@ -39,6 +39,11 @@ class Company(models.Model):
         help='Regime type associated with the company'
     )
 
+    l10n_aipy_idcsc1_prod = fields.Char( string='IDCSC1 Prod' )
+    l10n_aipy_idcsc2_prod = fields.Char( string='IDCSC2 Prod' )
+    l10n_aipy_idcsc1_test = fields.Char( string='IDCSC1 Test' )
+    l10n_aipy_idcsc2_test = fields.Char( string='IDCSC2 Test' )
+    
     def _get_company_address_field_names(self):
         """ Return a list of fields coming from the address partner to match
         on company address fields. Fields are labeled same on both models. """

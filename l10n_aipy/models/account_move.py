@@ -14,9 +14,16 @@ class AccountMove(models.Model):
     l10n_aipy_inverse_currency_rate = fields.Float(string='Inverse Currency Rate', readonly=True, store=True,
     compute="_compute_inverse_currency_rate", precompute=True, copy=False)
 
-    l10n_aipy_random_code = fields.Char(string='Random Code', copy=False, readonly=True, store=True)
+    l10n_aipy_random_code = fields.Char(string='Random Code', readonly=True, store=True, index = True,tracking=True)
     
-
+    l10n_aipy_response_status = fields.Selection([
+        ('P', 'Pending'),
+        ('E', 'Error'),
+        ('A', 'Aproved'),
+        ('O', 'Aproved with Observations'),
+        ('R', 'Rejected'),
+    ], string='DNIT Status', default='P', readonly=True,tracking=True)
+    
     @api.onchange('l10n_latam_document_type_id', 'l10n_latam_document_number')
     def _inverse_l10n_latam_document_number(self):
         super()._inverse_l10n_latam_document_number()
