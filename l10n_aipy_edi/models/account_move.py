@@ -10,8 +10,6 @@ import logging
 import pytz
 import json
 import re
-import subprocess
-import xml.dom.minidom
 import requests
 
 _logger = logging.getLogger(__name__)
@@ -24,18 +22,18 @@ class AccountMove(models.Model):
 
     _inherit = 'account.move'
 
-    l10n_aipy_response_cdc = fields.Char(string='Response CDC', readonly=True, tracking=True)
+    l10n_aipy_response_cdc = fields.Char(string='Response CDC', readonly=True, tracking=True, copy=False)
     
-    l10n_aipy_response_codres = fields.Char(string='Response Code', readonly=True, tracking=True)
-    l10n_aipy_response_mesres = fields.Text(string='Response Message', readonly=True, tracking=True)
-    l10n_aipy_response_fecproc = fields.Datetime(string='Response Date', readonly=True)
+    l10n_aipy_response_codres = fields.Char(string='Response Code', readonly=True, tracking=True, copy=False)
+    l10n_aipy_response_mesres = fields.Text(string='Response Message', readonly=True, tracking=True, copy=False)
+    l10n_aipy_response_fecproc = fields.Datetime(string='Response Date', readonly=True, copy=False)
 
-    l10n_aipy_request_json = fields.Text(string='Request JSON', readonly=True)
-    l10n_aipy_response_json = fields.Text(string='Response JSON', readonly=True)
+    l10n_aipy_request_json = fields.Text(string='Request JSON', readonly=True, copy=False)
+    l10n_aipy_response_json = fields.Text(string='Response JSON', readonly=True, copy=False)
 
     #############################
 
-    def _create_notification( self, title, type, body):
+    def _aipy_create_notification( self, title, type, body):
         message = {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -44,12 +42,12 @@ class AccountMove(models.Model):
                 'type': type,
                 'message': body,
                 'sticky': False,
-                #'next': {'type': 'ir.actions.act_window_close'}
+                'next': {'type': 'ir.actions.act_window_close'},
             },
         }
         return message
 
-    def _get_url( self, key):
+    def _aipy_get_url( self, key):
         sKey = 'aipy_edi.url.' + key + '.test' if self.company_id.l10n_aipy_testing_mode else '.prod'
 
         ICP = self.env['ir.config_parameter'].sudo()
@@ -59,7 +57,7 @@ class AccountMove(models.Model):
     ### Convierte un string en formato 2019-03-01T10:23:53-03:00
     ### a un string UTC en formato 2019-03-01T13:23:53
     ### Solo esta soportado -03:00 y -04:00
-    def _convert_date_to_utc(self, date):
+    def _aipy_convert_date_to_utc(self, date):
         d1 = date.split("T")[0]
         d2 = date.split("T")[1]
         d3 = d2[8:]
@@ -76,50 +74,50 @@ class AccountMove(models.Model):
 
 
     #############################
-    def _initialize_data( self):
+    def _aipy_initialize_data( self):
         _params = {}
         _data = {}
 
-    def _setP( self, key, value):
+    def _aipy_setP( self, key, value):
         _params.update({ key : value })
 
-    def _setD( self, key, value):
+    def _aipy_setD( self, key, value):
         _data.update({ key : value })
 
     #############################
 
-    def _get_DateTimeFormat( self, date):
+    def _aipy_get_DateTimeFormat( self, date):
         return date.strftime("%Y-%m-%dT%H:%M:%S")
 
-    def _get_NowTZ( self):
+    def _aipy_get_NowTZ( self):
         now_time = datetime.now()
         user = self.env['res.users'].browse([2])
         tz = pytz.timezone(user.tz) or pytz.utc
         return pytz.utc.localize(now_time).astimezone(tz)
 
     #############################
-    def _validate_random_code( self, code):
+    def _aipy_validate_random_code( self, code):
         acc = self.env['account.move'].search([('l10n_aipy_random_code', '=', code)])
         if len(acc) > 0:
             return True
         else:
             return False
 
-    def _generate_random_code( self):
+    def _aipy_generate_random_code( self):
         pin_length = 9
         number_max = (10**pin_length) - 1
         number = randint( 0, number_max)
         delta = (pin_length - len(str(number))) * '0'
         _random_code = '%s%s' % (delta,number)
         
-        condition = self._validate_random_code( _random_code)
+        condition = self._aipy_validate_random_code( _random_code)
         if condition:
-            self._generate_random_code()
+            self._aipy_generate_random_code()
         self.l10n_aipy_random_code = _random_code
         return _random_code
     #############################
 
-    def _compute_statement_lines( self):
+    def _aipy_compute_statement_lines( self):
         items = []
         isService = False
         isProduct = False
@@ -193,12 +191,12 @@ class AccountMove(models.Model):
         else:
             tipoTransaccion = 1
         if self.move_type == 'out_invoice' and tipoTransaccion != 0:
-            self._setD("tipoTransaccion", tipoTransaccion) #D011
-        self._setD("tipoImpuesto", globalTaxTye) #D013
+            self._aipy_setD("tipoTransaccion", tipoTransaccion) #D011
+        self._aipy_setD("tipoImpuesto", globalTaxTye) #D013
         return items
 
     #############################
-    def _compute_economic_activity( self):
+    def _aipy_compute_economic_activity( self):
         ecos = []
         ecos_count = 0
         for rec in self.company_id.l10n_aipy_economic_activity_ids:
@@ -210,10 +208,10 @@ class AccountMove(models.Model):
         if ecos_count == 0:
             raise UserError(_("Economic activity is required"))
         else:
-            self._setP("actividadesEconomicas", ecos)
+            self._aipy_setP("actividadesEconomicas", ecos)
                 
     #############################
-    def _compute_estabecimientos( self):
+    def _aipy_compute_estabecimientos( self):
         estabecimientos = []
         est = {}
         est.update({"codigo": "%03d" % int(self.company_id.l10n_aipy_dnit_organization)})
@@ -244,14 +242,14 @@ class AccountMove(models.Model):
         estabecimientos.append(est)
         return estabecimientos
                 
-    def _compute_regimeType( self):
+    def _aipy_compute_regimeType( self):
         if self.company_id.l10n_aipy_regime_type_id:
             value = self.company_id.l10n_aipy_regime_type_id.code
             if value and value > 0:
-                self._setP("tipoRegimen", value)
+                self._aipy_setP("tipoRegimen", value)
                 
     #############################
-    def _compute_timbrado( self):
+    def _aipy_compute_timbrado( self):
         """
         Compute the timbrado number and date
         """
@@ -265,18 +263,18 @@ class AccountMove(models.Model):
         if auth_code.__len__() != 8 and auth_code.__len__() != 11:
             raise UserError(_("Timbrado number must be 8 digits (12345678) or 11 digits (AA-12345678)"))
         if auth_code.__len__() == 8:
-            self._setP("timbradoNumero", auth_code) #C004
+            self._aipy_setP("timbradoNumero", auth_code) #C004
         elif auth_code.__len__() == 11:
             if auth_code.split("-").__len__() != 2:
                 raise UserError(_("Timbrado number must be 8 digits (12345678) or 11 digits (AA-12345678)"))
-            self._setP("timbradoNumero", auth_code.split("-")[1]) #C004
-            self._setP("numeroSerie", auth_code.split("-")[0]) #C010
+            self._aipy_setP("timbradoNumero", auth_code.split("-")[1]) #C004
+            self._aipy_setP("numeroSerie", auth_code.split("-")[0]) #C010
         if auth_date:
-            self._setP("timbradoFecha", auth_date.strftime("%Y-%m-%d")) #C008
+            self._aipy_setP("timbradoFecha", auth_date.strftime("%Y-%m-%d")) #C008
         else:
             raise UserError(_("Timbrado date is required"))
 
-    def _compute_digital_date( self):
+    def _aipy_compute_digital_date( self):
         """
         Compute the digital date
         """
@@ -286,16 +284,16 @@ class AccountMove(models.Model):
         user_tz = pytz.utc.localize(now).astimezone(tz)
         return user_tz.strftime("%Y-%m-%dT%H:%M:%S") #A004
 
-    def _compute_sequence_number( self):
+    def _aipy_compute_sequence_number( self):
         sequence_number = self.name
         if re.findall( "^\\d{3}-\\d{3}-\\d{7}$", sequence_number.split(" ")[1]) == 0:
             raise UserError(_("Sequence number format is invalid"))
         number = sequence_number.split(" ")[1]
-        self._setD( "establecimiento", number.split("-")[0])
-        self._setD( "punto", number.split("-")[1]) #C006
-        self._setD( "numero", number.split("-")[2]) #C010
+        self._aipy_setD( "establecimiento", number.split("-")[0])
+        self._aipy_setD( "punto", number.split("-")[1]) #C006
+        self._aipy_setD( "numero", number.split("-")[2]) #C010
 
-    def _compute_client( self):
+    def _aipy_compute_client( self):
         """
         Compute the client data
         """
@@ -350,7 +348,7 @@ class AccountMove(models.Model):
                 cliente.update({"distrito": distrito}) #D221
                 cliente.update({"ciudad": ciudad}) #D223
                 cliente.update({"direccion": self.partner_id.street}) #D213
-                cliente.update({"numeroCasa": self.partner_id.l10n_aipy_house if self.partner_id.l10n_aipy_house else 0}) #D218
+                cliente.update({"numeroCasa": self.partner_id.l10n_aipy_house if self.partner_id.l10n_aipy_house else 1}) #D218
             else:
                 cliente.update({"direccion": self.partner_id.street}) #D213
                 cliente.update({"numeroCasa": self.partner_id.l10n_aipy_house if self.partner_id.l10n_aipy_house else 0}) #D218
@@ -366,17 +364,17 @@ class AccountMove(models.Model):
             cliente.update({"email": self.partner_id.email}) #D215
         return cliente
 
-    def _compute_factura( self):
+    def _aipy_compute_factura( self):
         factura = {}
         factura.update({"presencia": 1}) #E011
         return factura
 
-    def _compute_ncnd( self):
+    def _aipy_compute_ncnd( self):
         ncnd = {}
         ncnd.update({"motivo": 2}) #E401
         return ncnd
 
-    def _compute_remision( self):
+    def _aipy_compute_remision( self):
         remision = {}
         remision.update({"motivo": 1}) #E501
         #remision.update({"tipoResponsable": 1}) #E503
@@ -384,7 +382,7 @@ class AccountMove(models.Model):
         #remision.update({"fechaFactura": 1}) #E506
         return remision
 
-    def _compute_condicion( self):
+    def _aipy_compute_condicion( self):
         condicion = {}
         condicion.update({"tipo": 2}) #E601 Credito
         #
@@ -395,63 +393,90 @@ class AccountMove(models.Model):
         condicion.update({"credito": credito}) 
         return condicion
 
+    def _aipy_compute_documentoAsociado( self):
+        docAsoc = {}
+        factura = self.reversed_entry_id
+        if factura and factura.l10n_aipy_response_cdc and factura.l10n_aipy_response_cdc != None:
+            docAsoc.update({"formato": 1}) #H002
+            docAsoc.update({"cdc": factura.l10n_aipy_response_cdc}) #H004
+        elif factura and factura.l10n_aipy_response_cdc == None:
+            docAsoc.update({"formato": 2}) #H002
+            tipo = factura.move_type
+            if tipo == 'out_invoice':
+                docAsoc.update({"tipo": 1}) #H009
+            elif tipo == 'out_refund':
+                docAsoc.update({"tipo": 2}) #H009
+            elif tipo == 'out_receipt':
+                docAsoc.update({"tipo": 4}) #H009
+            elif tipo == 'in_refund':
+                docAsoc.update({"tipo": 3}) #H009
+            else:
+                raise UserError(_("Document type is invalid (%s)" % tipo))
+            docAsoc.update({"timbrado": factura.company_id.l10n_aipy_dnit_auth_code_test if factura.company_id.l10n_aipy_testing_mode else factura.company_id.l10n_aipy_dnit_auth_code}) #H005
+            nroFactura = factura.name.split(" ")[1]
+            docAsoc.update({"establecimiento": nroFactura.split("-")[0]}) #H006
+            docAsoc.update({"punto": nroFactura.split("-")[1]}) #H007
+            docAsoc.update({"numero": nroFactura.split("-")[2]}) #H008
+        return docAsoc
     #############################
 
-    def dnit_generate_json( self):
+    def aipy_dnit_generate_json( self):
         """
         Generate the JSON file for the DNIT
         """
         # Initialize data
-        self._initialize_data()
+        self._aipy_initialize_data()
         # Set Params
-        self._setP("version", 150) #AA002
-        self._compute_timbrado()
-        self._setP("ruc", self.company_id.vat) #D101
-        self._setP("tipoContribuyente", 1 if self.company_id.partner_id.company_type == 'person' else 2) #D103
-        self._compute_regimeType()
-        self._setP("razonSocial", self.company_id.name) #D105
+        self._aipy_setP("version", 150) #AA002
+        self._aipy_compute_timbrado()
+        self._aipy_setP("ruc", self.company_id.vat) #D101
+        self._aipy_setP("tipoContribuyente", 1 if self.company_id.partner_id.company_type == 'person' else 2) #D103
+        self._aipy_compute_regimeType()
+        self._aipy_setP("razonSocial", self.company_id.name) #D105
         if self.company_id.l10n_aipy_fantasy_name:
-            self._setP("nombreFantasia", self.company_id.l10n_aipy_fantasy_name) #D106
+            self._aipy_setP("nombreFantasia", self.company_id.l10n_aipy_fantasy_name) #D106
         if self.company_id.l10n_aipy_testing_mode:
-            self._setP("nombreFantasia", self.company_id.name)
-            self._setP("razonSocial", "DE generado en ambiente de prueba - sin valor comercial ni fiscal") #D105
-        self._setP("establecimientos", self._compute_estabecimientos())
-        self._compute_economic_activity()
+            self._aipy_setP("nombreFantasia", self.company_id.name)
+            self._aipy_setP("razonSocial", "DE generado en ambiente de prueba - sin valor comercial ni fiscal") #D105
+        self._aipy_setP("establecimientos", self._aipy_compute_estabecimientos())
+        self._aipy_compute_economic_activity()
 
         # Set Data
-        self._setD("fecha", self._compute_digital_date()) #A004
-        self._setD("codigoSeguridadAleatorio", self._generate_random_code()) #B004
-        self._setD("tipoEmision", 1 ) #B002
+        self._aipy_setD("fecha", self._aipy_compute_digital_date()) #A004
+        self._aipy_setD("codigoSeguridadAleatorio", self._aipy_generate_random_code()) #B004
+        self._aipy_setD("tipoEmision", 1 ) #B002
         tipoDocumento = self.move_type
         if tipoDocumento == 'out_invoice':
-            self._setD("tipoDocumento", 1) #C002
+            self._aipy_setD("tipoDocumento", 1) #C002
         elif tipoDocumento == 'out_refund':
-            self._setD("tipoDocumento", 5) #C002
+            self._aipy_setD("tipoDocumento", 5) #C002
         elif tipoDocumento == 'out_receipt':
-            self._setD("tipoDocumento", 7) #C002
+            self._aipy_setD("tipoDocumento", 7) #C002
         elif tipoDocumento == 'in_refund':
-            self._setD("tipoDocumento", 6) #C002
+            self._aipy_setD("tipoDocumento", 6) #C002
         else:
             raise UserError(_("Document type is invalid (%s)" % tipoDocumento))
-        self._compute_sequence_number()
+        self._aipy_compute_sequence_number()
         #
-        self._setD("moneda", self.currency_id.name) #D015
+        self._aipy_setD("moneda", self.currency_id.name) #D015
         if self.currency_id.name != 'PYG':
-            self._setD("cambio", 1 / self.invoice_currency_rate) #D018
-            self._setD("condicionTipoCambio", 1) #D017
+            self._aipy_setD("cambio", 1 / self.invoice_currency_rate) #D018
+            self._aipy_setD("condicionTipoCambio", 1) #D017
         #
-        self._setD("cliente", self._compute_client())
+        self._aipy_setD("cliente", self._aipy_compute_client())
         if tipoDocumento == 'out_invoice':
-            self._setD("factura", self._compute_factura())
-            self._setD("condicion", self._compute_condicion())
+            self._aipy_setD("factura", self._aipy_compute_factura())
+            self._aipy_setD("condicion", self._aipy_compute_condicion())
         if tipoDocumento == 'in_refund' or tipoDocumento == 'out_refund':
-            self._setD("notaCreditoDebito", self._compute_ncnd())
+            self._aipy_setD("notaCreditoDebito", self._aipy_compute_ncnd())
         if tipoDocumento == 'in_refund':
-            self._setD("remision", self._compute_remision())
+            self._aipy_setD("remision", self._aipy_compute_remision())
         #
-        self._setD("items", self._compute_statement_lines())
+        self._aipy_setD("items", self._aipy_compute_statement_lines())
         #
-        self._cr.commit()
+        if self.move_type == 'out_refund':
+            self._aipy_setD("documentoAsociado", self._aipy_compute_documentoAsociado())
+        #self._cr.commit()
 
         all = {}
         all.update({"empresa": self.company_id.vat.split("-")[0]})
@@ -462,6 +487,12 @@ class AccountMove(models.Model):
         all.update({"params": _params})
         all.update({"data": _data})
         self.l10n_aipy_request_json = json.dumps(all, indent=4)
+        self.l10n_aipy_response_json = None
+        self.l10n_aipy_response_cdc = None
+        self.l10n_aipy_response_codres = None
+        self.l10n_aipy_response_mesres = None
+        self.l10n_aipy_response_fecproc = None
+
         #_logger.info( "\n -- JSON -- \n" + json.dumps(all, indent=4) + "\n")
 
         #with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs/all.json', 'w') as f:
@@ -480,17 +511,18 @@ class AccountMove(models.Model):
         #    _logger.info( "\n\n" + p.stdout)
         
         response = requests.post(
-            self._get_url("recibe"),  json=json.loads(json.dumps(all)), allow_redirects=False)    
+            self._aipy_get_url("recibe"),  json=json.loads(json.dumps(all)), allow_redirects=False)    
         if response.status_code == 301:
             response = requests.post( response.headers['Location'],  json=json.loads(json.dumps(all)))
         if response.status_code != 200:
             _logger.error( "Error: %s" % str(response.status_code))
             self.l10n_aipy_response_codres = str(response.status_code)
             self.l10n_aipy_response_mesres = response.text
+            return self._aipy_create_notification( _('Error!'), 'danger', str(response.status_code) + " " + response.text)
         else:
-            self._json_responseDNIT(response)
+            return self._aipy_json_responseDNIT(response)
 
-    def _json_responseDNIT( self, response_data):
+    def _aipy_json_responseDNIT( self, response_data):
         """
         Process the response from the DNIT
         """
@@ -503,40 +535,46 @@ class AccountMove(models.Model):
             self.l10n_aipy_response_mesres = response.get("message")
             msg = "Error: " + str(response['code']) + " " + str(response.get("message"))
             self.message_post(body=msg, message_type='notification')
-            self._cr.commit()
+            #self._cr.commit()
             #raise ValidationError(msg)
-            return self._create_notification( _('Warining!'), 'warning', msg)
+            return self._aipy_create_notification( _('Warining!'), 'warning', msg)
+
+        rRetEnviDe = None
+        payload = response.get("payload")
+        if payload and payload != None:
+            rRetEnviDe = payload.get("ns2:rRetEnviDe")
+
+        rProtDe = None
+        if rRetEnviDe and rRetEnviDe != None:
+            rProtDe = rRetEnviDe.get("ns2:rProtDe")
 
         dId = None # l10n_aipy_response_cdc  Se guarda como esta
         dFecProc = None # l10n_aipy_response_fecproc  Convertir a UTC
         dEstRes = None # l10n_aipy_response_status "Aprobado":"A","Rechazado":"R",else:"AO"
         dProtAut = None # Por ahora no lo usamos
+        gResProc = None
+        if rProtDe and rProtDe != None:
+            dId = rProtDe.get("ns2:Id")
+            dFecProc = self._aipy_convert_date_to_utc(rProtDe.get("ns2:dFecProc"))
+            dEstRes = rProtDe.get("ns2:dEstRes")
+            dProtAut = rProtDe.get("ns2:dProtAut")
+            gResProc = rProtDe.get("ns2:gResProc")
+
         dCodRes = None # l10n_aipy_response_codres  pasar a entero
-        dMesRes = None # l10n_aipy_response_mesres  Se guarda como esta
-        payload = response.get("payload")
-        if payload and payload != None:
-            rRetEnviDe = payload.get("ns2:rRetEnviDe")
-            if rRetEnviDe and rRetEnviDe != None:
-                rProtDe = rRetEnviDe.get("ns2:rProtDe")
-                if rProtDe and rProtDe != None:
-                    dId = rProtDe.get("ns2:Id")
-                    dFecProc = self._convert_date_to_utc(rProtDe.get("ns2:dFecProc"))
-                    gResProc = rProtDe.get("ns2:gResProc")
-                    if gResProc and gResProc != None and str(type(gResProc)) == "<class 'dict'>":
-                        dEstRes = gResProc.get("ns2:dEstRes")
-                        dProtAut = gResProc.get("ns2:dProtAut")
-                        dCodRes = gResProc.get("ns2:dCodRes")
-                        dMesRes = gResProc.get("ns2:dMesRes")
-                    elif gResProc and gResProc != None and str(type(gResProc)) == "<class 'list'>":
-                        for rec in gResProc:
-                            dEstRes = rec.get("ns2:dEstRes")
-                            dProtAut = rec.get("ns2:dProtAut")
-                            dCodRes = rec.get("ns2:dCodRes")
-                            dMesRes = rec.get("ns2:dMesRes")
+        dMsgRes = None # l10n_aipy_response_mesres  Se guarda como esta
+        if gResProc and gResProc != None and str(type(gResProc)) == "<class 'dict'>":
+            dCodRes = gResProc.get("ns2:dCodRes")
+            dMsgRes = gResProc.get("ns2:dMsgRes")
+        elif gResProc and gResProc != None and str(type(gResProc)) == "<class 'list'>":
+            for rec in gResProc:
+                dCodRes = rec.get("ns2:dCodRes")
+                dMsgRes = rec.get("ns2:dMsgRes")
+
         if dId != None:
             self.l10n_aipy_response_cdc = dId
         if dFecProc != None:
-            self.l10n_aipy_response_fecproc = datetime.strptime(dFecProc, "%Y-%m-%dT%H:%M:%S")
+            self.l10n_aipy_response_fecproc = datetime.strptime(dFecProc, "%Y-%m-%dT%H:%M:%S")           
+                    
         if dEstRes != None:
             if dEstRes == "Aprobado":
                 self.l10n_aipy_response_status = 'A'
@@ -546,12 +584,16 @@ class AccountMove(models.Model):
                 self.l10n_aipy_response_status = 'O'
         if dCodRes != None:
             self.l10n_aipy_response_codres = dCodRes
-        if dMesRes != None:
-            self.l10n_aipy_response_mesres = dMesRes
-        self._cr.commit()
-        msg = "Success: Documento " + str(dEstRes) + "[" + str(dCodRes) + "-" + str(dMesRes) + "] "
-        if self.l10n_aipy_response_status == 'R':
-            msg = "Warning: Documento " + str(dEstRes) + "[" + str(dCodRes) + "-" + str(dMesRes) + "] "
-        return self._create_notification( _('Success!') if self.l10n_aipy_response_status != 'R' else _('Warining!'), 'info', msg)
+        if dMsgRes != None:
+            self.l10n_aipy_response_mesres = dMsgRes
+                    
+        if dEstRes == None or dEstRes == "Rechazado":
+            msg = "Warning: Documento " + str(dEstRes) + "\n[" + str(dCodRes) + "-" + str(dMsgRes) + "] "
+            return self._aipy_create_notification( _('Warining!'), 'info', msg)
+
+        if dEstRes[:1] == "A":
+            msg = "Success: Documento " + str(dEstRes) + "\n[" + str(dCodRes) + "-" + str(dMsgRes) + "] "
+            return self._aipy_create_notification( _('Success!'), 'info', msg)
+
 
         

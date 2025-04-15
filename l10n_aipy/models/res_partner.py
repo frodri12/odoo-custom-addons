@@ -5,6 +5,7 @@ from odoo.exceptions import ValidationError, UserError
 
 import logging
 import re
+import stdnum.py
 
 _logger = logging.getLogger(__name__)
 
@@ -56,3 +57,15 @@ class ResPartner(models.Model):
                 wrong_vat=self.vat,
                 expected_format="XXXXX-X, XXXXXX-X, XXXXXXX-X o XXXXXXXX-X")
                 )
+            else:
+                # Validar el digito verificador
+                sRUC = self.vat.split('-')
+                sDigit = stdnum.py.vat.calc_check_digit(sRUC[0])
+                if sRUC[1] != str(sDigit):
+                    raise ValidationError( _("The %(vat_label)s number [%(wrong_vat)s] does not seem to be valid.\nNote: the expected format is: %(expected_format)s\nThe verification digit is %(sDigit)s",
+                    vat_label=self.l10n_latam_identification_type_id.name,
+                    wrong_vat=self.vat,
+                    expected_format="XXXXX-X, XXXXXX-X, XXXXXXX-X o XXXXXXXX-X",
+                    sDigit=sDigit)
+                    )
+

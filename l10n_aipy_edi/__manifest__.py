@@ -17,6 +17,10 @@
         'data/ir_config_parameter_data.xml',
         
         'views/account_move_view.xml',
+        'views/res_partner_view.xml',
+
+        #'static/src/core/notifications/notification.xml',
+        
         'views/views.xml',
         'views/templates.xml',
     ],
@@ -27,5 +31,12 @@
     'installable': True,
     'auto_install': ['l10n_aipy'],
     'license': 'LGPL-3',
+    'assets': {
+        'web._assets_core': [
+            ('replace', 'web/static/src/core/notifications/notification.xml', 'l10n_aipy_edi/static/src/core/notifications/notification.xml'),
+            ('replace', 'web/static/src/core/notifications/notification.scss', 'l10n_aipy_edi/static/src/core/notifications/notification.scss'),
+            ('replace', 'web/static/src/core/notifications/notification.variables.scss', 'l10n_aipy_edi/static/src/core/notifications/notification.variables.scss'),
+        ],
+    }
 }
 

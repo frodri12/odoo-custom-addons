@@ -17,7 +17,7 @@
             <xpath expr="//form/header/button" position="before">
                 <!--attrs="{'invisible':[('state',
                 '!=', 'posted')]}"-->
-                <button name="dnit_generate_json" type="object"
+                <button name="aipy_dnit_generate_json" type="object"
                     string="Send EDI" class="oe_highlight"
                     groups="account.group_account_invoice"
                     invisible="((l10n_aipy_response_status in ('A','AO')) or (state == 'draft')) or move_type not in ('out_invoice','out_refund')" />

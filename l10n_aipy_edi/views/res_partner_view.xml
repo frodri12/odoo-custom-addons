@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="inherit_view_id_inherit_res_partner" model="ir.ui.view">
+            <field name="name">res.partner.view.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='vat']" position="after">
+                    <button name="check_ruc_with_DNIT" type="object"
+                        string="Validate RUC" class="oe_highlight"
+                    />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+
+<!-- 
+self.commercial_partner_id.country_id.code == 'PY' and self.l10n_latam_identification_type_id.name
+== 'RUC'
+                    invisible="((l10n_aipy_response_status in ('A','AO')) or (state == 'draft')) or move_type not in
+('out_invoice','out_refund')" />
+-->
