@@ -70,6 +70,7 @@ Demo data for testing:
         'views/account_tax_view.xml',
         'views/account_move_view.xml',
         'views/l10n_aipy_economic_activity_view.xml',
+        'views/report_invoice.xml',
         
         'views/views.xml',
         'views/templates.xml',
@@ -80,20 +81,8 @@ Demo data for testing:
     ],
     'license': 'LGPL-3',
     'pre_init_hook': '_set_change_values',
-
-# UY
-#    'data': [
-#        'data/account_tax_report_data.xml',
-#        'data/l10n_latam.document.type.csv',
-#        'data/l10n_latam_identification_type_data.xml',
-#        'data/res_partner_data.xml',
-#        'data/res_currency_data.xml',
-#        'views/account_tax_views.xml',
-#    ],
-#    'demo': [
-#        
-#        'demo/res_currency_rate_demo.xml',
-#    ],
-
+    'external_dependencies': {
+        'python': ['tzdata']
+    },
 }
 

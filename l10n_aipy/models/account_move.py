@@ -24,12 +24,30 @@ class AccountMove(models.Model):
         ('R', 'Rejected'),
     ], string='DNIT Status', default='P', readonly=True,tracking=True, copy=False)
     
+    l10n_aipy_dnit_auth_code = fields.Char("Numero de Timbrado")
+    l10n_aipy_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
+    l10n_aipy_dnit_auth_enddate = fields.Date("Fecha de FIn del Timbrado")
+
+    @api.onchange('partner_id')
+    def _compute_dnit_auth(self):
+        self.l10n_aipy_dnit_auth_code = self.partner_id.l10n_aipy_dnit_auth_code
+        self.l10n_aipy_dnit_auth_startdate = self.partner_id.l10n_aipy_dnit_auth_startdate
+        self.l10n_aipy_dnit_auth_enddate = self.partner_id.l10n_aipy_dnit_auth_enddate
+
+        
+    def _get_name_invoice_report(self):
+        self.ensure_one()
+        if self.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == 'PY':
+            return 'l10n_aipy.report_invoice_document'
+        return super()._get_name_invoice_report()
+
     @api.onchange('l10n_latam_document_type_id', 'l10n_latam_document_number')
     def _inverse_l10n_latam_document_number(self):
         super()._inverse_l10n_latam_document_number()
 
         to_review = self.filtered(lambda x: (
-            x.l10n_latam_document_type_id
+            x.journal_id.l10n_aipy_is_pos
+            and x.l10n_latam_document_type_id
             and x.l10n_latam_document_number
             and (x.l10n_latam_manual_document_number or not x.highest_name)
             and x.l10n_latam_document_type_id.country_id.code == 'PY'

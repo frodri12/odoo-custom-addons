@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <!-- Workaround for Studio reports, see odoo/odoo#60660 -->
+    <template id="report_invoice" inherit_id="account.report_invoice">
+
+        <xpath expr='//t[@t-call="account.report_invoice_document"]' position="after">
+            <t t-elif="o._get_name_invoice_report() == 'l10n_aipy.report_invoice_document'">
+                <t t-call="l10n_aipy.report_invoice_document" t-lang="lang">
+                    <t t-set="subtotal_exempt_custom" t-value="0" />
+                    <t t-set="subtotal_tax5_custom" t-value="0" />
+                    <t t-set="subtotal_tax10_custom" t-value="0" />
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- report_invoice_document -->
+    <template id="report_invoice_document" inherit_id="account.report_invoice_document"
+        primary="True">
+
+        <t t-set="o" position="after">
+            <t t-set="report_date" t-value="o.invoice_date" />
+            <t t-set="report_number" t-value="o.l10n_latam_document_number" />
+            <t t-set="pre_printed_report" t-value="report_type == 'pdf'" />
+            <t t-set="document_letter" t-value="A" />
+            <t t-set="document_legend" t-value="201" />
+            <t t-set="report_name" t-value="o.l10n_latam_document_type_id.report_name" />
+            <t t-set="header_address" t-value="o.partner_id" />
+            <t t-set="custom_footer">
+            </t>
+        </t>
+
+        <xpath expr="//table[@name='invoice_line_table']" position="attributes">
+            <attribute name="style" add="font-size:0.7rem" separator=";" />
+        </xpath>
+        <!-- THs de la tabla de detalle -->
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th name="th_code_custom" class="text-start">
+                <span>Code</span>
+            </th>
+        </xpath>
+
+        <xpath expr="//th[@name='th_taxes']" position="replace" />
+
+        <xpath expr="//th[@name='th_subtotal']" position="replace">
+            <th name="th_subtotal_exempt_custom" class="text-end">
+                <span>Exempt</span>
+            </th>
+            <th name="th_subtotal_tax5_custom" class="text-end">
+                <span>Taxed 5%</span>
+            </th>
+            <th name="th_subtotal_tax10_custom" class="text-end">
+                <span>Taxed 10%</span>
+            </th>
+        </xpath>
+
+        <!-- TDs de la tabla de detalle -->
+        <xpath expr="//td[@name='account_invoice_line_name']" position="replace">
+            <td name="td_code_custom" class="text-start">
+                <t t-set="code_custom"
+                    t-value="line.product_id.default_code if line.product_id.default_code else line.product_id.id" />
+                <span t-if="code_custom" t-out="code_custom" t-options="{'widget': 'text'}">Cod</span>
+            </td>
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id.name" t-field="line.product_id.name"
+                    t-options="{'widget': 'text'}">Bacon Burger</span>
+            </td>
+        </xpath>
+
+        <xpath expr="//td[@name='td_quantity']" position="replace">
+            <td name="td_quantity" class="text-end text-nowrap">
+                <span t-field="line.quantity">3.00</span>
+                <span t-field="line.product_uom_id.name">units</span>
+            </td>
+        </xpath>
+
+        <xpath expr="//td[@name='td_price_unit']" position="replace">
+            <td name="td_price_unit"
+                t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">
+                <span class="text-nowrap" t-field="line.price_unit"
+                    t-options='{"widget": "monetary", "display_currency": o.currency_id}'>9.00</span>
+            </td>
+        </xpath>
+
+        <xpath expr="//td[@name='td_taxes']" position="replace" />
+        <xpath expr="//td[@name='td_subtotal']" position="replace">
+            <t t-set="subtotal_exempt_custom"
+                t-value="subtotal_exempt_custom + line.l10n_aipy_price_unit_iva0" />
+            <t t-set="subtotal_tax5_custom"
+                t-value="subtotal_tax5_custom + line.l10n_aipy_price_unit_iva5" />
+            <t t-set="subtotal_tax10_custom"
+                t-value="subtotal_tax10_custom + line.l10n_aipy_price_unit_iva10" />
+            <td name="td_subtotal_exempt_custom" class="text-end o_price_total">
+                <span class="text-nowrap" t-field="line.l10n_aipy_price_unit_iva0"
+                    t-options='{"widget": "monetary", "display_currency": o.currency_id}'>27.00</span>
+            </td>
+            <td name="td_subtotal_tax5_custom" class="text-end o_price_total">
+                <span class="text-nowrap" t-field="line.l10n_aipy_price_unit_iva5"
+                    t-options='{"widget": "monetary", "display_currency": o.currency_id}'>27.00</span>
+            </td>
+            <td name="td_subtotal_tax10_custom" class="text-end o_price_total">
+                <span class="text-nowrap" t-field="line.l10n_aipy_price_unit_iva10"
+                    t-options='{"widget": "monetary", "display_currency": o.currency_id}'>27.00</span>
+            </td>
+        </xpath>
+
+        <!-- Subtotales entre las lineas del producto -->
+        <xpath expr="//t/tr[hasclass('is-subtotal')]" position="replace" />
+
+        <!-- Linea de subtotales al final del detalle de la tabla -->
+        <xpath expr="//table[hasclass('o_has_total_table')]/tbody" position="inside">
+            <tr>
+                <t t-if="display_discount">
+                    <td colspan="5">
+                        <strong>SUBTOTAL</strong>
+                    </td>
+                </t>
+                <t t-else="">
+                    <td colspan="4">
+                        <strong>SUBTOTAL</strong>
+                    </td>
+                </t>
+
+
+                <td class="text-end o_price_total">
+                    <strong t-out="subtotal_exempt_custom"
+                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                </td>
+                <td class="text-end o_price_total">
+                    <strong t-out="subtotal_tax5_custom"
+                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                </td>
+                <td class="text-end o_price_total">
+                    <strong t-out="subtotal_tax10_custom"
+                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                </td>
+            </tr>
+            <t t-if="o.tax_totals.get('display_in_company_currency')">
+                <tr>
+                    <t t-if="display_discount">
+                        <td colspan="5">
+                            <strong>SUBTOTAL EN GUARANIES</strong>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td colspan="4">
+                            <strong>SUBTOTAL EN GUARANIES</strong>
+                        </td>
+                    </t>
+
+
+                    <td class="text-end o_price_total">
+                        <strong t-out="subtotal_exempt_custom / o.invoice_currency_rate"
+                            t-options='{"widget": "monetary", "display_currency": o.company_currency_id}' />
+                    </td>
+                    <td class="text-end o_price_total">
+                        <strong t-out="subtotal_tax5_custom / o.invoice_currency_rate"
+                            t-options='{"widget": "monetary", "display_currency": o.company_currency_id}' />
+                    </td>
+                    <td class="text-end o_price_total">
+                        <strong t-out="subtotal_tax10_custom / o.invoice_currency_rate"
+                            t-options='{"widget": "monetary", "display_currency": o.company_currency_id}' />
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+
+        <!-- Linea del subtotal -->
+        <xpath expr="//div[@id='total']" position="replace"></xpath>
+
+        <!-- Recuadro de los totales de IVA -->
+        <xpath expr="//table[hasclass('o_has_total_table')]/tbody" position="inside"></xpath>
+
+        <!-- Linea con el monto expresado en palabras-->
+        <xpath expr="//p[hasclass('lh-sm')]" position="replace"></xpath>
+
+        <!-- Recuadro del IVA con la moneda local-->
+        <xpath expr="//t[@t-call='account.document_tax_totals_company_currency_template']"
+            position="replace">
+            <div class="oe_structure" />
+        </xpath>
+
+        <!-- Condiciones de pago-->
+        <xpath expr="//div[@id='payment_term']" position="replace"></xpath>
+
+        <!--
+        <xpath expr="//div[hasclass('row')]" position="attributes">
+            <attribute name="class" add="prueba" separator=" "/>
+            <attribute name="style" add="height:100mm" separator=" "/>
+        </xpath>
+        -->
+
+        <!-- Agregado de valores de IVA -->
+        <xpath expr="//div[@id='right-elements']" position="before">
+            <t t-call="l10n_aipy.kude_subtotal_taxes" t-lang="lang"></t>
+        </xpath>
+    </template>
+
+    <template id="kude_subtotal_taxes">
+        <t t-set="tax_amount_5" t-value="0" />
+                    <t t-set="tax_amount_currency_5" t-value="0" />
+                    <t t-set="tax_amount_10" t-value="0" />
+                    <t t-set="tax_amount_currency_10" t-value="0" />
+                    <t t-set="tax_amount_total" t-value="0" />
+                    <t t-set="tax_amount_currency_total" t-value="0" />
+                    <t t-set="tax_totals" t-value="o.tax_totals" />
+
+                    <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+                        <t t-set="tax_amount_total" t-value="subtotal['tax_amount']" />
+                        <t t-set="tax_amount_currency_total"
+                            t-value="subtotal['tax_amount_currency']" />
+                        <t t-foreach="subtotal['tax_groups']" t-as="tax_group">
+                            <t t-if="'5' in tax_group['group_name']">
+                                <t t-set="tax_amount_5"
+                                    t-value="tax_amount_5 + tax_group['tax_amount']" />
+                                <t t-set="tax_amount_currency_5"
+                                    t-value="tax_amount_currency_5 + tax_group['tax_amount_currency']" />
+                            </t>
+                            <t t-if="'10' in tax_group['group_name']">
+                                <t t-set="tax_amount_10"
+                                    t-value="tax_amount_10 + tax_group['tax_amount']" />
+                                <t t-set="tax_amount_currency_10"
+                                    t-value="tax_amount_currency_10 + tax_group['tax_amount_currency']" />
+                            </t>
+                        </t>
+                    </t>
+        <table class="table table-borderless">
+            <tr>
+                <td class="text-start" colspan="5">
+                    <strong>TOTAL DE LA OPERACION:</strong>
+                </td>
+                <td class="text-end o_price_total" colspan="2">
+                    <strong t-out="tax_totals['total_amount_currency']"
+                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                </td>
+            </tr>
+
+            <t t-if="o.company_id.display_invoice_amount_total_words">
+                <tr>
+                    <td class="text-start">
+                        <span>Total a pagar: </span>
+                    </td>
+                    <td class="text-end" colspan="6">
+                        <span class="text-muted lh-sm" t-field="o.amount_total_words" />
+                    </td>
+                </tr>
+            </t>
+
+            <tr>
+                <td class="text-start">
+                    <strong>LIQUIDACION IVA:</strong>
+                </td>
+                <td class="text-end">
+                    <strong>(5%):</strong>
+                </td>
+                <td class="text-end o_price_total">
+                    <strong t-out="tax_amount_currency_5"
+                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                </td>
+                <td class="text-end">
+                    <strong>(10%):</strong>
+                </td>
+                <td class="text-end o_price_total">
+                    <strong t-out="tax_amount_currency_10"
+                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                </td>
+                <td class="text-end">
+                    <strong>TOTAL:</strong>
+                </td>
+                <td class="text-end o_price_total">
+                    <strong t-out="tax_amount_currency_total"
+                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                </td>
+            </tr>
+            <t t-if="o.tax_totals.get('display_in_company_currency')">
+                <tr>
+                    <td class="text-start">
+                        <strong>LIQUIDACION IVA en Guaranies:</strong>
+                    </td>
+                    <td class="text-end">
+                        <strong>(5%):</strong>
+                    </td>
+                    <td class="text-end o_price_total">
+                        <strong t-out="tax_amount_5"
+                            t-options='{"widget": "monetary", "display_currency": o.company_currency_id}' />
+                    </td>
+                    <td class="text-end">
+                        <strong>(10%):</strong>
+                    </td>
+                    <td class="text-end o_price_total">
+                        <strong t-out="tax_amount_10"
+                            t-options='{"widget": "monetary", "display_currency": o.company_currency_id}' />
+                    </td>
+                    <td class="text-end">
+                        <strong>TOTAL:</strong>
+                    </td>
+                    <td class="text-end o_price_total">
+                        <strong t-out="tax_amount_total"
+                            t-options='{"widget": "monetary", "display_currency": o.company_currency_id}' />
+                    </td>
+                </tr>
+            </t>
+        </table>
+
+    </template>
+    <!--
+    <template id="external_layout_standard_inherited" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[1]" position="replace">
+            <div id="custom_header"></div>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
+            <div id="custom_footer"></div>
+        </xpath>
+
+    </template>
+    <template id="external_layout_striped_inherited" inherit_id="web.external_layout_striped">
+        <xpath expr="//div[1]" position="replace">
+            <div id="custom_header"></div>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
+            <div id="custom_footer"></div>
+        </xpath>
+    </template>
+    <template id="external_layout_boxed_inherited" inherit_id="web.external_layout_boxed">
+        <xpath expr="//div[1]" position="replace">
+            <div id="custom_header"></div>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
+            <div id="custom_footer"></div>
+        </xpath>
+    </template>
+    <template id="external_layout_bold_inherited" inherit_id="web.external_layout_bold">
+        <xpath expr="//div[1]" position="replace">
+            <div id="custom_header"></div>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
+            <div id="custom_footer"></div>
+        </xpath>
+    </template>
+    <template id="external_layout_folder_inherited" inherit_id="web.external_layout_folder">
+        <xpath expr="//div[1]" position="replace">
+            <div id="custom_header"></div>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
+            <div id="custom_footer"></div>
+        </xpath>
+    </template>
+    <template id="external_layout_wave_inherited" inherit_id="web.external_layout_wave">
+        <xpath expr="//div[1]" position="replace">
+            <div id="custom_header"></div>
+        </xpath>
+
+        <xpath expr="//div[contains(@t-attf-class, 'footer')]" position="replace">
+            <div id="custom_footer"></div>
+        </xpath>
+    </template>
+    -->
+    <!--
+    <template id="external_layout_bubble_inherited" inherit_id="web.external_layout_bubble">
+        <xpath expr="//div[1]" position="replace">
+            <div id="custom_header"></div>
+        </xpath>
+
+        <xpath expr="//div[contains(@t-attf-class, 'footer')]" position="replace">
+
+            <div
+                t-attf-class="footer o_company_#{company.id}_layout {{report_type != 'pdf' and 'position-relative
+    mt-auto mx-n5'}}">
+                <svg t-attf-class="{{report_type == 'pdf' and 'position-fixed start-0'}}"
+                    width="500" height="228" viewBox="0 0 500 228" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M500 228H0V6.52743C26.3323 2.23278 53.3561 0 80.9008 0C256.522 0 410.969 90.7656 500 228Z"
+                        t-att-fill="company.secondary_color" fill-opacity=".1" />
+                </svg>
+                <div
+                    t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0
+    mx-5'}} pt-4 ">
+                    <t t-call="l10n_aipy.kude_custom_footer" t-lang="lang"></t>
+                </div>
+            </div>
+
+        </xpath>
+
+    </template>
+
+    <template id="kude_custom_footer">
+
+
+    </template>
+    -->
+</odoo>

@@ -6,6 +6,7 @@
         <field name="inherit_id" ref="account.view_move_form" />
         <field name="arch" type="xml">
 
+<!--            
             <xpath expr="//page[1]" position="after">
                 <page string="DNIT" invisible="country_code != 'PY'">
                     <group>
@@ -18,7 +19,8 @@
                     </group>
                 </page>
             </xpath>
-
+-->
+            
             <xpath expr="//div[@name='currency_conversion_div']" position="after">
                 <div name="inverse_currency_conversion_div" class="d-flex text-muted float-start"
                     invisible="currency_id == company_currency_id">
@@ -30,6 +32,12 @@
                     <field name="company_currency_id" readonly="1" options="{'no_open': True}" />
                 </div>
             </xpath>
+
+            <field name="invoice_vendor_bill_id" position="after">
+                <field name="l10n_aipy_dnit_auth_code" />
+                <field name="l10n_aipy_dnit_auth_startdate" />
+                <field name="l10n_aipy_dnit_auth_enddate" />
+            </field>
 
         </field>
     </record>

@@ -11,6 +11,8 @@ import pytz
 import json
 import re
 import requests
+import os.path
+from os import path
 
 _logger = logging.getLogger(__name__)
 
@@ -148,7 +150,7 @@ class AccountMove(models.Model):
             if ivaAmount == 0:
                 ivaTipo = 3
             item.update({"ivaTipo": ivaTipo}) #E731
-            item.update({"ivaBase": ivaBase}) #E733
+            item.update({"ivaBase": 0 if ivaTipo == 3 else ivaBase}) #E733
             item.update({"iva": ivaAmount}) #E734
             # E8.4 E750-E760 - Pendiente de implementar
             # E8.5 E770-E789 - Pendiente de implementar
@@ -254,10 +256,10 @@ class AccountMove(models.Model):
         Compute the timbrado number and date
         """
         auth_code = self.company_id.l10n_aipy_dnit_auth_code
-        auth_date = self.company_id.l10n_aipy_dnit_auth_date
+        auth_date = self.company_id.l10n_aipy_dnit_auth_startdate
         if self.company_id.l10n_aipy_testing_mode:
             auth_code = self.company_id.l10n_aipy_dnit_auth_code_test
-            auth_date = self.company_id.l10n_aipy_dnit_auth_date_test
+            auth_date = self.company_id.l10n_aipy_dnit_auth_startdate_test
         if not auth_code or not auth_date:
             raise UserError(_("Timbrado number and date are required"))
         if auth_code.__len__() != 8 and auth_code.__len__() != 11:
@@ -494,11 +496,13 @@ class AccountMove(models.Model):
         self.l10n_aipy_response_fecproc = None
 
         #_logger.info( "\n -- JSON -- \n" + json.dumps(all, indent=4) + "\n")
+        path_vscode_logs = "/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs"
+        if path.exists(path_vscode_logs):
+            with open(path_vscode_logs + '/params.json', 'w') as f:
+                json.dump(_params, f, indent=4)
+            with open(path_vscode_logs + '/data.json', 'w') as f:
+                json.dump(_data, f, indent=4)
 
-        #with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs/all.json', 'w') as f:
-        #    json.dump(_params, f, indent=4)
-        #with open('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs/data.json', 'w') as f:
-        #    json.dump(_data, f, indent=4)
         #p = subprocess.run('/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/TestXML.sh', shell=True, capture_output=True, check=True, encoding='utf-8')
 
         #if p.stdout[0:5] == "<?xml":

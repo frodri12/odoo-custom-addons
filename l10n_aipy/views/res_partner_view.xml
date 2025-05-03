@@ -33,11 +33,12 @@
                         invisible="country_id == 185" />
                     <field name="zip" placeholder="ZIP" class="o_address_zip"
                         readonly="type == 'contact' and parent_id" invisible="country_id == 185" />
-                        
+
                     <field name="state_id" class="o_address_state" placeholder="Department"
                         options="{'no_open': True, 'no_quick_create': True}"
                         readonly="type == 'contact' and parent_id" invisible="country_id != 185" />
-                    <field name="l10n_aipy_district_id" placeholder="District" class="o_address_state"
+                    <field name="l10n_aipy_district_id" placeholder="District"
+                        class="o_address_state"
                         readonly="type == 'contact' and parent_id" invisible="country_id != 185" />
                     <field name="l10n_aipy_city_id" placeholder="City" class="o_address_zip"
                         readonly="type == 'contact' and parent_id" invisible="country_id != 185" />
@@ -49,6 +50,11 @@
                     </div>
                 </xpath>
 
+                <field name="category_id" position="after">
+                    <field name="l10n_aipy_dnit_auth_code" />
+                    <field name="l10n_aipy_dnit_auth_startdate" />
+                    <field name="l10n_aipy_dnit_auth_enddate" />
+                </field>
             </field>
         </record>
     </data>

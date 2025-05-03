@@ -27,6 +27,10 @@ class ResPartner(models.Model):
         default=lambda self: self.env.ref('l10n_aipy.it_ruc', raise_if_not_found=False),
         help="The type of identification")
 
+    l10n_aipy_dnit_auth_code = fields.Char("Numero de Timbrado")
+    l10n_aipy_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
+    l10n_aipy_dnit_auth_enddate = fields.Date("Fecha de FIn del Timbrado")
+    
     @api.model
     def default_get(self,fields_list):
         res = super().default_get(fields_list)

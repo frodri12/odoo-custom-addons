@@ -3,7 +3,7 @@
     <record id="base.partner_demo_company_py" model="res.partner" forcecreate="1">
         <field name="name">PY Company</field>
         <field name='l10n_latam_identification_type_id' ref='it_ruc' />
-        <field name="vat">1234567-0</field>
+        <field name="vat">1234567-9</field>
         <field name='state_id' ref="state_py_1" />
         <field name="street">Calle Falsa 123</field>
         <field name="city">Asuncion</field>

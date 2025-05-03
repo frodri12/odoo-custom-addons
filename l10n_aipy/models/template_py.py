@@ -56,8 +56,8 @@ class AccountChartTemplate(models.AbstractModel):
             },
         }
 
-    def _load(self, template_code, company, install_demo):
-        res = super()._load(template_code, company, install_demo)
+    def _load(self, template_code, company, install_demo, force_create=True):
+        res = super()._load(template_code, company, install_demo, force_create)
         if template_code == 'py':
             company.partner_id.l10n_latam_identification_type_id = self.env.ref('l10n_aipy.it_ruc')
         return res

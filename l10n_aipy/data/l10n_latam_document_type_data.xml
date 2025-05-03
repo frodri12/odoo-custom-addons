@@ -1,33 +1,216 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- internal_type: invoice, debit_note, credit_note, all -->
     <record id="dc_a_f" model="l10n_latam.document.type">
-        <field name="code">1</field>
+        <field name="code">109</field> <!-- 109 -->
         <field name="sequence">10</field>
         <field name="name">Facturas</field>
         <field name="report_name">Factura</field>
         <field name="internal_type">invoice</field>
         <field name="doc_code_prefix">FA</field>
-        <field name="country_id" ref="base.py"/>
+        <field name="country_id" ref="base.py" />
         <!-- <field name="purchase_aliquots">not_zero</field> -->
     </record>
     <record id="dc_a_nd" model="l10n_latam.document.type">
-        <field name="code">2</field>
+        <field name="code">111</field> <!-- 111 -->
         <field name="sequence">20</field>
         <field name="name">Notas de Debito</field>
         <field name="report_name">Nota de Debito</field>
         <field name="internal_type">debit_note</field>
         <field name="doc_code_prefix">ND</field>
-        <field name="country_id" ref="base.py"/>
+        <field name="country_id" ref="base.py" />
         <!-- <field name="purchase_aliquots">not_zero</field> -->
     </record>
     <record id="dc_a_nc" model="l10n_latam.document.type">
-        <field name="code">3</field>
+        <field name="code">110</field> <!-- 110 -->
         <field name="sequence">30</field>
         <field name="name">Notas de Credito</field>
         <field name="report_name">Nota de Credito</field>
         <field name="internal_type">credit_note</field>
         <field name="doc_code_prefix">NC</field>
-        <field name="country_id" ref="base.py"/>
+        <field name="country_id" ref="base.py" />
         <!-- <field name="purchase_aliquots">not_zero</field> -->
+    </record>
+
+    <record id="dc_a_101" model="l10n_latam.document.type">
+        <field name="code">101</field>
+        <field name="sequence">40</field>
+        <field name="name">Autofactura</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">AF</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_102" model="l10n_latam.document.type">
+        <field name="code">102</field>
+        <field name="sequence">50</field>
+        <field name="name">Boleta de transporte publico de pasajeros</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">BT</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_103" model="l10n_latam.document.type">
+        <field name="code">103</field>
+        <field name="sequence">60</field>
+        <field name="name">Boleta de venta</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">BV</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_104" model="l10n_latam.document.type">
+        <field name="code">104</field>
+        <field name="sequence">70</field>
+        <field name="name">Boleta RESIMPLE</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">BS</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_105" model="l10n_latam.document.type">
+        <field name="code">105</field>
+        <field name="sequence">80</field>
+        <field name="name">Boleto de loterias, juegos de azar</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">BL</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_106" model="l10n_latam.document.type">
+        <field name="code">106</field>
+        <field name="sequence">90</field>
+        <field name="name">Boleto o ticket de transporte aereo</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">AE</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_107" model="l10n_latam.document.type">
+        <field name="code">107</field>
+        <field name="sequence">100</field>
+        <field name="name">Despacho de importación</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">DI</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_108" model="l10n_latam.document.type">
+        <field name="code">108</field>
+        <field name="sequence">110</field>
+        <field name="name">Entrada a espectáculos públicos</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">EP</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+
+    <record id="dc_a_112" model="l10n_latam.document.type">
+        <field name="code">112</field>
+        <field name="sequence">120</field>
+        <field name="name">Ticket mauina registradora</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">TQ</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_201" model="l10n_latam.document.type">
+        <field name="code">201</field>
+        <field name="sequence">130</field>
+        <field name="name">Comprobante de egresos or compras a credito</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">CC</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_202" model="l10n_latam.document.type">
+        <field name="code">202</field>
+        <field name="sequence">140</field>
+        <field name="name">Comprobante del exterior legalizado</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">Cl</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_203" model="l10n_latam.document.type">
+        <field name="code">203</field>
+        <field name="sequence">150</field>
+        <field name="name">Comprobante de ingreso por ventas a credito</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">CV</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_204" model="l10n_latam.document.type">
+        <field name="code">204</field>
+        <field name="sequence">160</field>
+        <field name="name">Comprobante de ingresos de entidades publicas</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">CP</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_205" model="l10n_latam.document.type">
+        <field name="code">205</field>
+        <field name="sequence">170</field>
+        <field name="name">Extracto de cuenta - Billete electronico</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">EB</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_206" model="l10n_latam.document.type">
+        <field name="code">206</field>
+        <field name="sequence">180</field>
+        <field name="name">Extracto de cuenta IPS</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">EI</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_207" model="l10n_latam.document.type">
+        <field name="code">207</field>
+        <field name="sequence">190</field>
+        <field name="name">Extracto de cuenta TC/TD</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">EC</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_208" model="l10n_latam.document.type">
+        <field name="code">208</field>
+        <field name="sequence">200</field>
+        <field name="name">Liquidacion de Salarios</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">LS</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_209" model="l10n_latam.document.type">
+        <field name="code">209</field>
+        <field name="sequence">210</field>
+        <field name="name">Otros comprobantes de egresos</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">OE</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_210" model="l10n_latam.document.type">
+        <field name="code">210</field>
+        <field name="sequence">220</field>
+        <field name="name">Otros comprobantes de ingresos</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">OI</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
+    </record>
+    <record id="dc_a_211" model="l10n_latam.document.type">
+        <field name="code">211</field>
+        <field name="sequence">230</field>
+        <field name="name">Transferencias o giros bancarios/Boleta de deposito</field>
+        <field name="internal_type">all</field>
+        <field name="doc_code_prefix">TB</field>
+        <field name="country_id" ref="base.py" />
+        <field name="active">False</field>
     </record>
 </odoo>

@@ -22,9 +22,11 @@ class Company(models.Model):
     l10n_aipy_testing_mode = fields.Boolean("Testing Mode", default=True)
 
     l10n_aipy_dnit_auth_code = fields.Char("Numero de Timbrado")
-    l10n_aipy_dnit_auth_date = fields.Date("Fecha del Timbrado")
+    l10n_aipy_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
+    l10n_aipy_dnit_auth_enddate = fields.Date("Fecha de FIn del Timbrado")
     l10n_aipy_dnit_auth_code_test = fields.Char("Numero de Timbrado (Test)")
-    l10n_aipy_dnit_auth_date_test = fields.Date("Fecha del Timbrado (Test)")
+    l10n_aipy_dnit_auth_startdate_test = fields.Date("Fecha de Inicio del Timbrado (Test)")
+    l10n_aipy_dnit_auth_enddate_test = fields.Date("Fecha de Fin del Timbrado (Test)")
 
     l10n_aipy_economic_activity_ids = fields.One2many(
         'l10n_aipy.economic.activity', 'company_id',

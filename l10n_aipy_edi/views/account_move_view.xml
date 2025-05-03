@@ -23,11 +23,19 @@
                     invisible="((l10n_aipy_response_status in ('A','AO')) or (state == 'draft')) or move_type not in ('out_invoice','out_refund')" />
             </xpath>
 
-            <xpath expr="//page[3]" position="after">
+            <xpath expr="//page[2]" position="after">
                 <page string="SIFEN" invisible="country_code != 'PY'">
                     <group>
+                        <group>
+                            <field name="l10n_aipy_random_code" />
+                        </group>
+                        <group>
+                            <field name="l10n_aipy_response_status" />
+                        </group>
+                    </group>
+                    <group>
                         <field name="l10n_aipy_response_cdc" />
-                        
+
                         <field name="l10n_aipy_response_codres" />
                         <field name="l10n_aipy_response_mesres" />
                         <field name="l10n_aipy_response_fecproc" />
