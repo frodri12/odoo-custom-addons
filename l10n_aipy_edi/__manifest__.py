@@ -29,7 +29,7 @@
         'demo/demo.xml',
     ],
     'installable': True,
-    'auto_install': ['l10n_aipy'],
+    #'auto_install': ['l10n_aipy'],
     'license': 'LGPL-3',
     'assets': {
         'web._assets_core': [

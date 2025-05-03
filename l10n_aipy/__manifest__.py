@@ -43,7 +43,7 @@ Demo data for testing:
         'l10n_latam_invoice_document',
         'l10n_latam_base',
     ],
-    'auto_install': ['account'],
+    #'auto_install': ['account'],
     # always loaded
     'data': [
         'security/ir.model.access.csv',
