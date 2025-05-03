@@ -144,11 +144,11 @@ class AccountMove(models.Model):
             ivaTipo = 1
             ivaBase = rec.tax_ids.l10n_aipy_tax_base
             ivaAmount = rec.tax_ids.amount
-            if ivaBase != 100:
-                ivaAmount = rec.tax_ids.amount * 100 / ivaBase
-                ivaTipo = 4
             if ivaAmount == 0:
                 ivaTipo = 3
+            elif ivaBase != 100:
+                ivaAmount = rec.tax_ids.amount * 100 / ivaBase
+                ivaTipo = 4
             item.update({"ivaTipo": ivaTipo}) #E731
             item.update({"ivaBase": 0 if ivaTipo == 3 else ivaBase}) #E733
             item.update({"iva": ivaAmount}) #E734
