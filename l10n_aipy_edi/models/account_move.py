@@ -146,7 +146,7 @@ class AccountMove(models.Model):
             ivaAmount = rec.tax_ids.amount
             if ivaAmount == 0:
                 ivaTipo = 3
-            elif ivaBase != 100:
+            elif ivaBase < 100 and ivaBase > 0:
                 ivaAmount = rec.tax_ids.amount * 100 / ivaBase
                 ivaTipo = 4
             item.update({"ivaTipo": ivaTipo}) #E731
