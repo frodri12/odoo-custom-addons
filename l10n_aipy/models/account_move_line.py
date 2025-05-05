@@ -30,7 +30,7 @@ class l10nAiPyAccountMoveLine(models.Model):
             ivaTipo = 1
             ivaBase = AccountTax.l10n_aipy_tax_base
             ivaAmount = AccountTax.amount
-            if ivaBase != 100:
+            if ivaBase < 100 and ivaBase > 0:
                 #_logger.error( "ivaAmount (1.5) = %s", str(ivaAmount))
                 #_logger.error( "ivaBase = (30) %s", str(ivaBase))
                 ivaTipo = 4

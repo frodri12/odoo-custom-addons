@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="l10n_latam_invoice_document.view_account_journal_form" />
         <field name="arch" type="xml">
             <field name="l10n_latam_use_documents" position="after">
-                <field name="l10n_aipy_is_pos" invisible="country_code != 'AR' or not l10n_latam_use_documents or type not in ['sale', 'purchase']"/>
+                <field name="l10n_aipy_is_pos" invisible="country_code != 'PY' or not l10n_latam_use_documents or type not in ['sale', 'purchase']"/>
                 <field name="l10n_aipy_dnit_expedition_point" invisible="country_code != 'PY'" />
              </field>
         </field>

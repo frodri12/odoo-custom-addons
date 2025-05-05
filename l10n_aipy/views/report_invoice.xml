@@ -2,9 +2,87 @@
 
 <odoo>
 
+    <template id="custom_header">
+        <div class="mb-3">
+            <div class="row">
+                <div name="left-upper-side" class="col-5">
+                    <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)"
+                        style="max-height: 45px;" alt="Logo" />
+                </div>
+                <div name="center-upper" class="col-2 text-center"
+                    t-att-style="'color: %s;' % o.company_id.primary_color">
+                    <span style="display: inline-block; text-align: center; line-height: 8px;"> </span>
+                </div>
+                <div name="right-upper-side" class="col-5 text-end" style="padding-left: 0px;">
+                    <!-- (6) Titulo de Documento -->
+                    <h4 t-att-style="'color: %s;' % o.company_id.primary_color">
+                        <strong>
+                            <span t-out="report_name" />
+                        </strong>
+                    </h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6" style="padding-right: 0px;">
+                    <!-- (1) Nombre de Fantasia -->
+                    <!-- (2) Apellido y Nombre o Razon Social -->
+                    <span t-field="o.company_id.partner_id.name" />
+
+                    <!-- (3) Domicilio Comercial (Domicilio Fiscal is the same) -->
+                    <br />
+                    <div></div>
+                    <!-- we dont use the address widget as it adds a new line on the phone and
+                        we want to reduce at maximum lines qty -->
+                    <t
+                        t-out="' - '.join([item for item in [
+                            ', '.join([item for item in [header_address.street, header_address.street2] if item]),
+                            header_address.city,
+                            header_address.state_id and header_address.state_id.name,
+                            header_address.zip,
+                            header_address.country_id and header_address.country_id.name] if item])" />
+                    <span t-if="header_address.phone"> - </span>
+                    <span t-if="header_address.phone" style="white-space: nowrap;"
+                        t-out="'Tel: ' + header_address.phone" />
+                    <br />
+                    <span t-att-style="'color: %s;' % o.company_id.primary_color"
+                        t-out="' - '.join([item for item in [(header_address.website or '').replace('https://', '').replace('http://', ''), header_address.email] if item])" />
+
+                </div>
+                <div class="col-6 text-end" style="padding-left: 0px;">
+
+                    <!-- (7) Numero punto venta - (8) numero de documento -->
+                    <strong t-out="report_number" />
+                    <br />
+
+                    <!-- (9) Fecha -->
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color">Date: </span>
+                    <span t-out="report_date" t-options='{"widget": "date"}' />
+
+                    <!-- (5) Condicion de IVA / Responsabilidad -->
+                    <!-- (10) CUIT -->
+                    <br />
+                    <!-- <span t-field="o.company_id.l10n_ar_afip_responsibility_type_id" /> -->
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> - RUC: </span>
+                    <span t-field="o.company_id.partner_id.vat" />
+
+                    <!-- (11) IIBB: -->
+                    <!-- (12) Inicio de actividades -->
+                    <br />
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color">IIBB: </span>
+                    <!-- <span t-out="o.company_id.l10n_ar_gross_income_type == 'exempt' and
+                    'Exento' or o.company_id.l10n_ar_gross_income_number" /> -->
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> -
+                        Activities Start: </span>
+                    <!-- <span t-field="o.company_id.l10n_ar_afip_start_date" /> -->
+
+                </div>
+            </div>
+        </div>
+    </template>
+
+
     <!-- Workaround for Studio reports, see odoo/odoo#60660 -->
     <template id="report_invoice" inherit_id="account.report_invoice">
-
         <xpath expr='//t[@t-call="account.report_invoice_document"]' position="after">
             <t t-elif="o._get_name_invoice_report() == 'l10n_aipy.report_invoice_document'">
                 <t t-call="l10n_aipy.report_invoice_document" t-lang="lang">
@@ -21,14 +99,26 @@
         primary="True">
 
         <t t-set="o" position="after">
+            <t t-set="custom_header" t-value="'l10n_aipy.custom_header'" />
             <t t-set="report_date" t-value="o.invoice_date" />
             <t t-set="report_number" t-value="o.l10n_latam_document_number" />
-            <t t-set="pre_printed_report" t-value="report_type == 'pdf'" />
+            <t t-set="pre_printed_report"
+                t-value="report_type == 'pdf'" />
             <t t-set="document_letter" t-value="A" />
-            <t t-set="document_legend" t-value="201" />
+            <t t-set="document_legend"
+                t-value="o.l10n_latam_document_type_id.code and 'Cod. %02d' % int(o.l10n_latam_document_type_id.code) or ''" />
             <t t-set="report_name" t-value="o.l10n_latam_document_type_id.report_name" />
-            <t t-set="header_address" t-value="o.partner_id" />
+            <t t-set="header_address" t-value="o.company_id.partner_id" />
             <t t-set="custom_footer">
+                <div class="row">
+                    <div name="footer_left_column" class="col-8 text-start">
+                    </div>
+                    <div name="footer_right_column" class="col-4 text-end">
+                        <div name="pager" t-if="report_type == 'pdf'"> Page: <span class="page" /> / <span
+                                class="topage" />
+                        </div>
+                    </div>
+                </div>
             </t>
         </t>
 
@@ -200,32 +290,32 @@
 
     <template id="kude_subtotal_taxes">
         <t t-set="tax_amount_5" t-value="0" />
-                    <t t-set="tax_amount_currency_5" t-value="0" />
-                    <t t-set="tax_amount_10" t-value="0" />
-                    <t t-set="tax_amount_currency_10" t-value="0" />
-                    <t t-set="tax_amount_total" t-value="0" />
-                    <t t-set="tax_amount_currency_total" t-value="0" />
-                    <t t-set="tax_totals" t-value="o.tax_totals" />
+        <t t-set="tax_amount_currency_5" t-value="0" />
+        <t t-set="tax_amount_10" t-value="0" />
+        <t t-set="tax_amount_currency_10" t-value="0" />
+        <t t-set="tax_amount_total" t-value="0" />
+        <t t-set="tax_amount_currency_total" t-value="0" />
+        <t t-set="tax_totals" t-value="o.tax_totals" />
 
-                    <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
-                        <t t-set="tax_amount_total" t-value="subtotal['tax_amount']" />
-                        <t t-set="tax_amount_currency_total"
-                            t-value="subtotal['tax_amount_currency']" />
-                        <t t-foreach="subtotal['tax_groups']" t-as="tax_group">
-                            <t t-if="'5' in tax_group['group_name']">
-                                <t t-set="tax_amount_5"
-                                    t-value="tax_amount_5 + tax_group['tax_amount']" />
-                                <t t-set="tax_amount_currency_5"
-                                    t-value="tax_amount_currency_5 + tax_group['tax_amount_currency']" />
-                            </t>
-                            <t t-if="'10' in tax_group['group_name']">
-                                <t t-set="tax_amount_10"
-                                    t-value="tax_amount_10 + tax_group['tax_amount']" />
-                                <t t-set="tax_amount_currency_10"
-                                    t-value="tax_amount_currency_10 + tax_group['tax_amount_currency']" />
-                            </t>
-                        </t>
-                    </t>
+        <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+            <t t-set="tax_amount_total" t-value="subtotal['tax_amount']" />
+            <t t-set="tax_amount_currency_total"
+                t-value="subtotal['tax_amount_currency']" />
+            <t t-foreach="subtotal['tax_groups']" t-as="tax_group">
+                <t t-if="'5' in tax_group['group_name']">
+                    <t t-set="tax_amount_5"
+                        t-value="tax_amount_5 + tax_group['tax_amount']" />
+                    <t t-set="tax_amount_currency_5"
+                        t-value="tax_amount_currency_5 + tax_group['tax_amount_currency']" />
+                </t>
+                <t t-if="'10' in tax_group['group_name']">
+                    <t t-set="tax_amount_10"
+                        t-value="tax_amount_10 + tax_group['tax_amount']" />
+                    <t t-set="tax_amount_currency_10"
+                        t-value="tax_amount_currency_10 + tax_group['tax_amount_currency']" />
+                </t>
+            </t>
+        </t>
         <table class="table table-borderless">
             <tr>
                 <td class="text-start" colspan="5">
@@ -305,90 +395,177 @@
         </table>
 
     </template>
-    <!--
-    <template id="external_layout_standard_inherited" inherit_id="web.external_layout_standard">
-        <xpath expr="//div[1]" position="replace">
-            <div id="custom_header"></div>
-        </xpath>
-        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
-            <div id="custom_footer"></div>
-        </xpath>
 
-    </template>
-    <template id="external_layout_striped_inherited" inherit_id="web.external_layout_striped">
-        <xpath expr="//div[1]" position="replace">
-            <div id="custom_header"></div>
+    <template id="external_layout_standard" inherit_id="web.external_layout_standard">
+        <!-- support for custom header -->
+        <xpath expr="//img/../.." position="attributes">
+            <attribute name="t-if">not custom_header</attribute>
         </xpath>
-        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
-            <div id="custom_footer"></div>
-        </xpath>
-    </template>
-    <template id="external_layout_boxed_inherited" inherit_id="web.external_layout_boxed">
-        <xpath expr="//div[1]" position="replace">
-            <div id="custom_header"></div>
-        </xpath>
-        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
-            <div id="custom_footer"></div>
-        </xpath>
-    </template>
-    <template id="external_layout_bold_inherited" inherit_id="web.external_layout_bold">
-        <xpath expr="//div[1]" position="replace">
-            <div id="custom_header"></div>
-        </xpath>
-        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
-            <div id="custom_footer"></div>
-        </xpath>
-    </template>
-    <template id="external_layout_folder_inherited" inherit_id="web.external_layout_folder">
-        <xpath expr="//div[1]" position="replace">
-            <div id="custom_header"></div>
-        </xpath>
-        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
-            <div id="custom_footer"></div>
-        </xpath>
-    </template>
-    <template id="external_layout_wave_inherited" inherit_id="web.external_layout_wave">
-        <xpath expr="//div[1]" position="replace">
-            <div id="custom_header"></div>
-        </xpath>
-
-        <xpath expr="//div[contains(@t-attf-class, 'footer')]" position="replace">
-            <div id="custom_footer"></div>
-        </xpath>
-    </template>
-    -->
-    <!--
-    <template id="external_layout_bubble_inherited" inherit_id="web.external_layout_bubble">
-        <xpath expr="//div[1]" position="replace">
-            <div id="custom_header"></div>
-        </xpath>
-
-        <xpath expr="//div[contains(@t-attf-class, 'footer')]" position="replace">
-
-            <div
-                t-attf-class="footer o_company_#{company.id}_layout {{report_type != 'pdf' and 'position-relative
-    mt-auto mx-n5'}}">
-                <svg t-attf-class="{{report_type == 'pdf' and 'position-fixed start-0'}}"
-                    width="500" height="228" viewBox="0 0 500 228" fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M500 228H0V6.52743C26.3323 2.23278 53.3561 0 80.9008 0C256.522 0 410.969 90.7656 500 228Z"
-                        t-att-fill="company.secondary_color" fill-opacity=".1" />
-                </svg>
-                <div
-                    t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0
-    mx-5'}} pt-4 ">
-                    <t t-call="l10n_aipy.kude_custom_footer" t-lang="lang"></t>
-                </div>
+        <xpath expr="//img/../.." position="after">
+            <div t-attf-class="header o_company_#{company.id}_layout"
+                t-if="custom_header">
+                <t t-call="#{custom_header}" />
             </div>
-
         </xpath>
 
+        <!-- support for custom footer -->
+        <div class="o_footer_content d-flex border-top pt-2" position="attributes">
+            <attribute name="t-if">not custom_footer</attribute>
+        </div>
+
+        <div class="o_footer_content d-flex border-top pt-2" position="after">
+            <div class="o_footer_content border-top pt-2"
+                t-if="custom_footer">
+                <t t-out="custom_footer" />
+            </div>
+        </div>
     </template>
 
-    <template id="kude_custom_footer">
+    <template id="external_layout_bold" inherit_id="web.external_layout_bold">
+        <!-- support for custom header -->
+        <xpath expr="//img/../.." position="attributes">
+            <attribute name="t-if">not custom_header</attribute>
+        </xpath>
+        <xpath expr="//img/../.." position="after">
+            <div t-if="custom_header">
+                <t t-call="#{custom_header}" />
+            </div>
+        </xpath>
 
-
+        <!-- support for custom footer -->
+        <div class="o_footer_content row border-top pt-2" position="attributes">
+            <attribute name="t-if">not custom_footer</attribute>
+        </div>
+        <div class="o_footer_content row border-top pt-2" position="after">
+            <div class="o_footer_content row border-top pt-2"
+                t-if="custom_footer">
+                <t t-out="custom_footer" />
+            </div>
+        </div>
     </template>
-    -->
+
+    <template id="external_layout_boxed" inherit_id="web.external_layout_boxed">
+        <!-- support for custom header -->
+        <xpath expr="//img/../.." position="attributes">
+            <attribute name="t-if">not custom_header</attribute>
+        </xpath>
+        <xpath expr="//img/../.." position="after">
+            <div t-if="custom_header">
+                <t t-call="#{custom_header}" />
+            </div>
+        </xpath>
+
+        <!-- support for custom footer -->
+        <div class="o_footer_content row border-top pt-2" position="attributes">
+            <attribute name="t-if">not custom_footer</attribute>
+        </div>
+        <div class="o_footer_content row border-top pt-2" position="after">
+            <div class="o_footer_content row border-top pt-2"
+                t-if="custom_footer">
+                <t t-out="custom_footer" />
+            </div>
+        </div>
+    </template>
+
+    <template id="external_layout_striped" inherit_id="web.external_layout_striped">
+        <!-- support for custom header -->
+        <xpath expr="//img/../.." position="attributes">
+            <attribute name="t-if">not custom_header</attribute>
+        </xpath>
+        <xpath expr="//img/../.." position="after">
+            <div t-if="custom_header">
+                <t t-call="#{custom_header}" />
+            </div>
+        </xpath>
+
+        <!-- support for custom footer -->
+        <div class="o_footer_content border-top pt-2 text-center" position="attributes">
+            <attribute name="t-if">not custom_footer</attribute>
+        </div>
+        <div class="o_footer_content border-top pt-2 text-center" position="after">
+            <div class="o_footer_content border-top pt-2 text-center"
+                t-if="custom_footer">
+                <t t-out="custom_footer" />
+            </div>
+        </div>
+    </template>
+
+    <template id="external_layout_bubble" inherit_id="web.external_layout_bubble">
+        <!-- support for custom header -->
+        <xpath expr="//img/../.." position="attributes">
+            <attribute name="t-if">not custom_header</attribute>
+        </xpath>
+        <xpath expr="//img/../.." position="after">
+            <div t-if="custom_header">
+                <t t-call="#{custom_header}" />
+            </div>
+        </xpath>
+
+        <!-- support for custom footer -->
+        <div
+            t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0 mx-5'}} pt-4 text-center"
+            position="attributes">
+            <attribute name="t-if">not custom_footer</attribute>
+        </div>
+        <div
+            t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0 mx-5'}} pt-4 text-center"
+            position="after">
+            <div
+                t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0 mx-5'}} pt-4 text-center"
+                t-if="custom_footer">
+                <t t-out="custom_footer" />
+            </div>
+        </div>
+    </template>
+
+    <template id="external_layout_wave" inherit_id="web.external_layout_wave">
+        <!-- support for custom header -->
+        <xpath expr="//img/../.." position="attributes">
+            <attribute name="t-if">not custom_header</attribute>
+        </xpath>
+        <xpath expr="//img/../.." position="after">
+            <div t-if="custom_header">
+                <t t-call="#{custom_header}" />
+            </div>
+        </xpath>
+
+        <!-- support for custom footer -->
+        <div
+            t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0 mx-5'}} pt-5 text-center"
+            position="attributes">
+            <attribute name="t-if">not custom_footer</attribute>
+        </div>
+        <div
+            t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0 mx-5'}} pt-5 text-center"
+            position="after">
+            <div
+                t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0 mx-5'}} pt-5 text-center"
+                t-if="custom_footer">
+                <t t-out="custom_footer" />
+            </div>
+        </div>
+    </template>
+
+    <template id="external_layout_folder" inherit_id="web.external_layout_folder">
+        <!-- support for custom header -->
+        <xpath expr="//img/../.." position="attributes">
+            <attribute name="t-if">not custom_header</attribute>
+        </xpath>
+        <xpath expr="//img/../.." position="after">
+            <div t-if="custom_header">
+                <t t-call="#{custom_header}" />
+            </div>
+        </xpath>
+
+        <!-- support for custom footer -->
+        <div class="o_footer_content d-flex border-top pt-2" position="attributes">
+            <attribute name="t-if">not custom_footer</attribute>
+        </div>
+        <div class="o_footer_content d-flex border-top pt-2" position="after">
+            <div class="o_footer_content border-top pt-2"
+                t-if="custom_footer">
+                <t t-out="custom_footer" />
+            </div>
+        </div>
+    </template>
 </odoo>
