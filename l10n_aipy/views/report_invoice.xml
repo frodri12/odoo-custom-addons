@@ -138,7 +138,36 @@
         <xpath expr="//t[@t-set='layout_document_title']" position="replace" />
 
         <!-- -->
-        
+        <xpath expr="//div[@id='informations']" position="replace">
+            <div id="informations" class="row mb-4">
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">RUC/Documento
+                                de Identidad: </strong>
+                            <strong style="font-size:0.7rem" t-field="o.partner_id.vat" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">Razón Social:</strong>
+                            <strong style="font-size:0.7rem" t-field="o.partner_id.name" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">Dirección:</strong>
+                            <strong style="font-size:0.7rem" t-field="o.partner_id.contact_address_complete" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
         <xpath expr="//table[@name='invoice_line_table']" position="attributes">
             <attribute name="style" add="font-size:0.7rem" separator=";" />
         </xpath>
