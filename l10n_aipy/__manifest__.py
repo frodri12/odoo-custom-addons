@@ -4,7 +4,7 @@
     'website': "https://www.avatar.com.py",
     'icon': '/account/static/description/l10n.png',
     'countries': ['py'],
-    'version': '0.1',
+    'version': '0.3',
     'author': "Avatar Informatica SRL",
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml

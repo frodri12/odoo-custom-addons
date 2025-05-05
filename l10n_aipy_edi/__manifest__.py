@@ -4,7 +4,7 @@
     'website': "https://www.avatar.com.py",
     'icon': '/account/static/description/l10n.png',
     'countries': ['py'],
-    'version': '0.1',
+    'version': '0.3',
     'author': "Avatar Informatica SRL",
     'category': 'Accounting/Localizations/EDI',
     'version': '0.1',
