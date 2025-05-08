@@ -55,6 +55,7 @@ Demo data for testing:
         'views/dnit_menuitem.xml',
         'views/l10n_py_dnit_responsibility_type_view.xml',
         'views/l10n_latam_document_type_view.xml',
+        'views/account_journal_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
