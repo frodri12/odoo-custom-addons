@@ -45,6 +45,8 @@ Demo data for testing:
     ],
     # always loaded
     'data': [
+        'data/l10n_latam_identification_type_data.xml',
+        'data/l10n_py_dnit_responsibility_type_data.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
