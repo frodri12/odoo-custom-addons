@@ -39,14 +39,17 @@ Demo data for testing:
        """,
     # any module necessary for this one to work correctly
     'depends': [
-        'account',
         'l10n_latam_invoice_document',
         'l10n_latam_base',
+        'account',
     ],
     # always loaded
     'data': [
+        'security/ir.model.access.csv',
+
         'data/l10n_latam_identification_type_data.xml',
         'data/l10n_py_dnit_responsibility_type_data.xml',
+        'data/uom_uom_data.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
