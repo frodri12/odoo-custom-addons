@@ -1,0 +1,7 @@
+id,sequence,code,name,l10n_py_letter,report_name,internal_type,doc_code_prefix,country_id/id,purchase_aliquots
+dc_a_f,10,109,INVOICES,A,INVOICE,invoice,FA-A,base.py,not_zero
+dc_a_nc,30,110,CREDIT NOTES,A,CREDIT NOTE,credit_note,NC-A,base.py,not_zero
+dc_a_nd,20,111,DEBIT MEMOS,A,DEBIT NOTE,debit_note,ND-A,base.py,not_zero
+dc_a_nvc,50,103,CASH SALES NOTES,A,,invoice,NVC-A,base.py,not_zero
+dc_a_t,560,112,TICKET INVOICE,A,INVOICE TICKET,invoice,TF-A,base.py,not_zero
+dc_a_autof,40,101,SELF INVOICES,A,SELF INVOICE,invoice,AF-A,base.py,not_zero

@@ -50,6 +50,11 @@ Demo data for testing:
         'data/l10n_latam_identification_type_data.xml',
         'data/l10n_py_dnit_responsibility_type_data.xml',
         'data/uom_uom_data.xml',
+        'data/l10n_latam.document.type.csv',
+
+        'views/dnit_menuitem.xml',
+        'views/l10n_py_dnit_responsibility_type_view.xml',
+        'views/l10n_latam_document_type_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
