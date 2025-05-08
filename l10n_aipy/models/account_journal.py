@@ -14,10 +14,10 @@ class AccountJournal(models.Model):
         help="Paraguay: Specify if this Journal will be used to send electronic invoices to DNIT.",
     )
 
-    @api.onchange('l10n_aipy_dnit_expedition_point', 'type')
-    def _onchange_set_short_name(self):
-        if self.type == 'sale' and self.l10n_aipy_dnit_expedition_point:
-            self.code = "%03i" % self.l10n_aipy_dnit_expedition_point
+    #@api.onchange('l10n_aipy_dnit_expedition_point', 'type')
+    #def _onchange_set_short_name(self):
+    #    if self.type == 'sale' and self.l10n_aipy_dnit_expedition_point:
+    #        self.code = "%03i" % self.l10n_aipy_dnit_expedition_point
             
     @api.depends('country_code', 'type', 'l10n_latam_use_documents')
     def _compute_l10n_aipy_is_pos(self):

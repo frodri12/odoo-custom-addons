@@ -36,10 +36,9 @@
         <field name="code">101</field>
         <field name="sequence">40</field>
         <field name="name">Autofactura</field>
-        <field name="internal_type">all</field>
+        <field name="internal_type">invoice</field>
         <field name="doc_code_prefix">AF</field>
         <field name="country_id" ref="base.py" />
-        <field name="active">False</field>
     </record>
     <record id="dc_a_102" model="l10n_latam.document.type">
         <field name="code">102</field>
