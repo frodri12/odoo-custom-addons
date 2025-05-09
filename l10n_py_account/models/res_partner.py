@@ -146,3 +146,12 @@ class ResPartner(models.Model):
         if self.country_id.code == 'PY' and self.l10n_py_city_id.country_id.code == 'PY' :
             self.write({'city': self.l10n_py_city_id.name,})
             
+    ###################
+    @api.model
+    def default_get(self,fields_list):
+        res = super().default_get(fields_list)
+        res.update(
+            {'country_id':self.env['res.country'].search([('code', '=', 'PY')], limit=1).id}
+        )
+        res.update({'lang':self.env.lang})
+        return res
