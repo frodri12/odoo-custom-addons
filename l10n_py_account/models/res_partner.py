@@ -7,6 +7,10 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+ADDRESS_FIELDS = (
+    'street', 'l10n_aipy_house', 'street2', 
+    'zip', 'city', 'state_id', 'l10n_aipy_district_id', 
+    'l10n_aipy_city_id', 'country_id')
 
 class ResPartner(models.Model):
 
@@ -131,3 +135,14 @@ class ResPartner(models.Model):
             id_number = re.sub('[^0-9]', '', self.vat)
             res = int(id_number)
         return res
+
+    ###########################
+    l10n_py_house = fields.Char("House")
+    l10n_py_district_id = fields.Many2one("l10n_py_district")
+    l10n_py_city_id = fields.Many2one("l10n_py_city")
+
+    @api.onchange('country_id','l10n_py_city_id')
+    def _onchange_city(self):
+        if self.country_id.code == 'PY' and self.l10n_py_city_id.country_id.code == 'PY' :
+            self.write({'city': self.l10n_py_city_id.name,})
+            

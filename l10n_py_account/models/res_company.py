@@ -37,3 +37,33 @@ class ResCompany(models.Model):
                     raise UserError(_('Could not change the DNIT Responsibility of this company because there are already accounting entries.'))
 
         return super().write(vals)
+
+
+    ########################
+
+    l10n_py_house = fields.Char(
+        "House", compute='_compute_address', inverse='_inverse_compute_house')
+    l10n_py_district_id = fields.Many2one(
+        "l10n_py_district", compute='_compute_address', inverse='_inverse_compute_district')
+    l10n_py_city_id = fields.Many2one(
+        "l10n_py_city", compute='_compute_address', inverse='_inverse_compute_city')
+
+    def _inverse_compute_house(self):
+        for company in self:
+            company.partner_id.l10n_py_house = company.l10n_py_house
+
+    def _inverse_compute_district(self):
+        for company in self:
+            company.partner_id.l10n_py_district_id = company.l10n_py_district_id
+
+    def _inverse_compute_city(self):
+        for company in self:
+            company.partner_id.l10n_py_city_id = company.l10n_py_city_id
+
+    def _get_company_address_field_names(self):
+        """ Return a list of fields coming from the address partner to match
+        on company address fields. Fields are labeled same on both models. """
+        return [
+            'street', 'l10n_py_house', 'street2', 
+            'city', 'zip', 'state_id', 'l10n_py_district_id', 
+            'l10n_py_city_id', 'country_id']

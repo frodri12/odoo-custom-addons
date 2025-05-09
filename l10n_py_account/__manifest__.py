@@ -52,6 +52,9 @@ Demo data for testing:
         'data/uom_uom_data.xml',
         'data/l10n_latam.document.type.csv',
         'data/res.country.csv',
+        'data/res_country_state_data.xml',
+        'data/l10n_py_district_data.xml',
+        'data/l10n_py_city_data.xml',
 
         'views/dnit_menuitem.xml',
         'views/l10n_py_dnit_responsibility_type_view.xml',
@@ -59,6 +62,7 @@ Demo data for testing:
         'views/account_journal_view.xml',
         'views/res_partner_view.xml',
         'views/res_company_view.xml',
+        'views/res_country_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

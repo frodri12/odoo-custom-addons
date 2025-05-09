@@ -6,6 +6,8 @@ from . import uom_uom
 from . import l10n_latam_document_type
 from . import account_fiscal_position
 from . import res_country
+from . import l10n_py_district
+from . import l10n_py_city
 
 from . import res_company
 from . import res_partner
