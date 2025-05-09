@@ -42,6 +42,8 @@ class AccountJournal(models.Model):
         return [
             ('II_IM', _('Pre-printed Invoice')),
             ('RLI_RLM', _('Online Invoice')),
+            ('AUII_IM', _('Pre-printed Self Invoice')),
+            ('AURLI_RLM', _('Online Self Invoice')),
             ('BFERCEL', _('Electronic Fiscal Bond - Online Invoice')),
             ('FEERCELP', _('Export Voucher - Billing Plus')),
             ('FEERCEL', _('Export Voucher - Online Invoice')),
@@ -60,7 +62,7 @@ class AccountJournal(models.Model):
     def _check_dnit_pos_system(self):
         journals = self.filtered(
             lambda j: j.l10n_py_is_pos and j.type == 'purchase' and
-            j.l10n_py_dnit_pos_system not in ['II_IM', 'RLI_RLM', 'RAW_MAW'])
+            j.l10n_py_dnit_pos_system not in ['II_IM', 'AUII_IM', 'RLI_RLM', 'AURLI_RLM', 'RAW_MAW'])
         if journals:
             raise ValidationError("\n".join(
                 _("The pos system %(system)s can not be used on a purchase journal (id %(id)s)", system=x.l10n_py_dnit_pos_system, id=x.id)
@@ -155,7 +157,7 @@ class AccountJournal(models.Model):
             '23', '24', '25', '26', '27', '28', '33', '43', '45', '46', '48', '58', '60', '61', '150', '151', '157',
             '158', '161', '162', '164', '166', '167', '171', '172', '180', '182', '186', '188', '332']
         codes = []
-        if (self.type == 'sale' and not self.l10n_py_is_pos) or (self.type == 'purchase' and dnit_pos_system in ['II_IM', 'RLI_RLM']):
+        if (self.type == 'sale' and not self.l10n_py_is_pos) or (self.type == 'purchase' and dnit_pos_system in ['II_IM', 'AUII_IM', 'RLI_RLM', 'AURLI_RLM']):
             codes = codes_issuer_is_supplier
         elif self.type == 'purchase' and dnit_pos_system == 'RAW_MAW':
             # electronic invoices (wsfev1) (intersection between available docs on ws and codes_issuer_is_supplier)
