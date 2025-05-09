@@ -66,6 +66,9 @@ Demo data for testing:
     ],
     # only loaded in demonstration mode
     'demo': [
+        'demo/py_base_demo.xml',
+        'demo/res_partner_demo.xml',
+        'demo/product_product_demo.xml',
     ],
     'license': 'LGPL-3',
 }

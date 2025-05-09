@@ -21,7 +21,7 @@
     <record model='l10n_py.dnit.responsibility.type' id='res_IVAE'>
         <field name='code'>4</field>
         <field name='name'>IVA Sujeto Exento</field>
-        <field name='active' eval="True" />
+        <field name='active' eval="False" />
     </record>
     <record model='l10n_py.dnit.responsibility.type' id='res_CF'>
         <field name='code'>5</field>
@@ -36,6 +36,7 @@
     <record model='l10n_py.dnit.responsibility.type' id='res_EXT_Prov'>
         <field name='code'>8</field>
         <field name='name'>Proveedor del Exterior</field>
+        <field name='active' eval="True" />
     </record>
     <record model='l10n_py.dnit.responsibility.type' id='res_EXT'>
         <field name='code'>9</field>
