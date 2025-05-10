@@ -68,6 +68,17 @@
             <field name="l10n_py_dnit_pos_system">FEERCEL</field>
         </record>
 
+        <record id="purchase_journal_selfinvoice" model="account.journal">
+            <field name="name">Self Invoice Journal</field>
+            <field name="company_id" ref="base.demo_company_py"/>
+            <field name="type">purchase</field>
+            <field name="code">AUTO</field>
+            <field name="l10n_latam_use_documents" eval="True"/>
+            <field name="l10n_py_dnit_pos_number">3</field>
+            <field name="l10n_py_dnit_pos_partner_id" ref="base.partner_demo_company_py"/>
+            <field name="l10n_py_dnit_pos_system">AUII_IM</field>
+        </record>
+
     </data>
 
 </odoo>
