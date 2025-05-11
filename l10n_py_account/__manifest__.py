@@ -67,6 +67,7 @@ Demo data for testing:
         'views/res_config_settings_view.xml',
         'views/account_move_view.xml',
         'views/l10n_py_economic_activity_view.xml',
+        'views/report_invoice.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

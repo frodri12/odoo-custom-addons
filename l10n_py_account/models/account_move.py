@@ -306,3 +306,13 @@ class AccountMove(models.Model):
             else:
                 move.l10n_aipy_inverse_currency_rate = 1
 
+
+    l10n_py_dnit_auth_code = fields.Char("Numero de Timbrado")
+    l10n_py_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
+    l10n_py_dnit_auth_enddate = fields.Date("Fecha de FIn del Timbrado")
+
+    @api.onchange('partner_id')
+    def _compute_dnit_auth(self):
+        self.l10n_py_dnit_auth_code = self.partner_id.l10n_py_dnit_auth_code
+        self.l10n_py_dnit_auth_startdate = self.partner_id.l10n_py_dnit_auth_startdate
+        self.l10n_py_dnit_auth_enddate = self.partner_id.l10n_py_dnit_auth_enddate

@@ -157,3 +157,7 @@ class ResPartner(models.Model):
         return res
 
         
+    l10n_py_dnit_auth_code = fields.Char("Numero de Timbrado")
+    l10n_py_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
+    l10n_py_dnit_auth_enddate = fields.Date("Fecha de FIn del Timbrado")
+

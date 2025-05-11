@@ -19,6 +19,8 @@ from . import account_chart_template
 from . import account_tax_group
 from . import account_move
 from . import res_users
+from . import account_tax
+from . import account_move_line
 
 from . import template_py_base
 

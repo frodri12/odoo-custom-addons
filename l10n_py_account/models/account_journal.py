@@ -99,6 +99,7 @@ class AccountJournal(models.Model):
         specific invoices to/from customer/supplier
         """
         self.ensure_one()
+        # 1:Contribuyente, 4:Exento, 5:Consumidor Final, 7: NN, 8: Prov ext, 9:Cliente Ext
         letters_data = {
             'issued': {
                 '1': ['A', 'B', 'E', 'M'],
@@ -116,7 +117,7 @@ class AccountJournal(models.Model):
             'received': {
                 '1': ['A', 'B', 'C', 'E', 'M', 'I'],
                 '4': ['B', 'C', 'I'],
-                '5': ['B', 'C', 'I'],
+                '5': ['A','B', 'C', 'I'],
                 '6': ['A', 'B', 'C', 'M', 'I'],
                 '7': ['B', 'C', 'I'],
                 '8': ['E', 'B', 'C'],
