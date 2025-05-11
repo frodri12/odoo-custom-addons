@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <record id="base.user_admin" model="res.users">
-        <field name="lang">es_PY</field>
-        <!-- <field name="name" ref="base.user_admin" /> -->
-    </record>
-</odoo>

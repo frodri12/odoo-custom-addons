@@ -46,7 +46,18 @@
                     <field name="country_id" placeholder="Country" class="o_address_country"
                         options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}" />
                 </div>
+            </xpath>
 
+            <!-- ESTABLECIMIENTO -->
+            <field name="currency_id" position="after">
+                <field name="l10n_py_establecimiento" invisible="country_code != 'PY'" />
+            </field>
+
+            <!-- TABS -->
+            <xpath expr="//page[1]" position="after">
+                <page string="Economic Activity" invisible="country_code != 'PY'">
+                    <field name="l10n_aipy_economic_activity_ids" />
+                </page>
             </xpath>
         </field>
     </record>

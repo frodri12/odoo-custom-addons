@@ -67,3 +67,15 @@ class ResCompany(models.Model):
             'street', 'l10n_py_house', 'street2', 
             'city', 'zip', 'state_id', 'l10n_py_district_id', 
             'l10n_py_city_id', 'country_id']
+
+        
+    ########################
+
+    l10n_py_establecimiento = fields.Integer( string="Establecimiento", default=1)
+    
+    ########################
+    l10n_aipy_economic_activity_ids = fields.One2many(
+        'l10n_py.economic.activity', 'company_id',
+        string='Economic Activities',
+        help='Economic activities associated with the country'
+    )

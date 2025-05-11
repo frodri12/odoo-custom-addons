@@ -155,3 +155,5 @@ class ResPartner(models.Model):
         )
         res.update({'lang':self.env.lang})
         return res
+
+        

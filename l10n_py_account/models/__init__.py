@@ -9,11 +9,16 @@ from . import res_country
 from . import l10n_py_district
 from . import l10n_py_city
 
+from . import l10n_py_economic_activity
+
 from . import res_company
 from . import res_partner
 
 from . import account_journal
 from . import account_chart_template
+from . import account_tax_group
+from . import account_move
+from . import res_users
 
 from . import template_py_base
 

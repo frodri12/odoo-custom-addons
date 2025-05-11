@@ -2,8 +2,8 @@
 
 from odoo import models, fields
 
-class L10nAipyEconomicActivity(models.Model):
-    _name = 'l10n_aipy.economic.activity'
+class L10npyEconomicActivity(models.Model):
+    _name = 'l10n_py.economic.activity'
     _description = 'Economic Activity'
     _rec_name = 'name'
     _order = 'name'

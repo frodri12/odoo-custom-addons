@@ -86,7 +86,7 @@ class AccountJournal(models.Model):
         The short code of the journal only admit 5 characters, so depending on the size of the pos_number (also max 5)
         we add or not a prefix to identify sales journal.
         """
-        if self.type == 'sale' and self.l10n_py_dnit_pos_number:
+        if self.type == 'sale' and self.l10n_py_dnit_pos_number and 0 == 1:  ## Forzamos a que no se ejecute nunca
             self.code = "%05i" % self.l10n_py_dnit_pos_number
 
     ###
@@ -156,8 +156,11 @@ class AccountJournal(models.Model):
         codes_issuer_is_supplier = [
             '23', '24', '25', '26', '27', '28', '33', '43', '45', '46', '48', '58', '60', '61', '150', '151', '157',
             '158', '161', '162', '164', '166', '167', '171', '172', '180', '182', '186', '188', '332']
+        auto_factura = ['2000']
         codes = []
-        if (self.type == 'sale' and not self.l10n_py_is_pos) or (self.type == 'purchase' and dnit_pos_system in ['II_IM', 'AUII_IM', 'RLI_RLM', 'AURLI_RLM']):
+        if (self.type == 'purchase' and dnit_pos_system in ['AUII_IM', 'AURLI_RLM']):
+            codes = auto_factura
+        elif (self.type == 'sale' and not self.l10n_py_is_pos) or (self.type == 'purchase' and dnit_pos_system in ['II_IM', 'RLI_RLM']):
             codes = codes_issuer_is_supplier
         elif self.type == 'purchase' and dnit_pos_system == 'RAW_MAW':
             # electronic invoices (wsfev1) (intersection between available docs on ws and codes_issuer_is_supplier)

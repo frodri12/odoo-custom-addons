@@ -63,6 +63,10 @@ Demo data for testing:
         'views/res_partner_view.xml',
         'views/res_company_view.xml',
         'views/res_country_view.xml',
+        'views/uom_uom_view.xml',
+        'views/res_config_settings_view.xml',
+        'views/account_move_view.xml',
+        'views/l10n_py_economic_activity_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
@@ -71,4 +75,5 @@ Demo data for testing:
         'demo/product_product_demo.xml',
     ],
     'license': 'LGPL-3',
+    'pre_init_hook': '_set_change_values',
 }
