@@ -83,7 +83,7 @@
                         <div class="col">
                             <strong
                                 t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">
-                                Dirección:</strong>
+                                Address:</strong>
                             <strong style="font-size:0.7rem"
                                 t-field="o.partner_id.contact_address_complete" />
                         </div>
@@ -200,12 +200,12 @@
                 <tr>
                     <t t-if="display_discount">
                         <td colspan="5">
-                            <strong>SUBTOTAL EN GUARANIES</strong>
+                            <strong>SUBTOTAL IN GUARANIES</strong>
                         </td>
                     </t>
                     <t t-else="">
                         <td colspan="4">
-                            <strong>SUBTOTAL EN GUARANIES</strong>
+                            <strong>SUBTOTAL IN GUARANIES</strong>
                         </td>
                     </t>
                     <td class="text-end o_price_total">
@@ -278,7 +278,7 @@
         <table class="table table-borderless">
             <tr>
                 <td class="text-start" colspan="5">
-                    <strong>TOTAL DE LA OPERACION:</strong>
+                    <strong>TOTAL OPERATION:</strong>
                 </td>
                 <td class="text-end o_price_total" colspan="2">
                     <strong t-out="tax_totals['total_amount_currency']"
@@ -289,7 +289,7 @@
             <t t-if="o.company_id.display_invoice_amount_total_words">
                 <tr>
                     <td class="text-start">
-                        <span>Total a pagar: </span>
+                        <span>Total to pay: </span>
                     </td>
                     <td class="text-end" colspan="6">
                         <span class="text-muted lh-sm" t-field="o.amount_total_words" />
@@ -299,7 +299,7 @@
 
             <tr>
                 <td class="text-start">
-                    <strong>LIQUIDACION IVA:</strong>
+                    <strong>VAT SETTLEMENT:</strong>
                 </td>
                 <td class="text-end">
                     <strong>(5%):</strong>
@@ -326,7 +326,7 @@
             <t t-if="o.tax_totals.get('display_in_company_currency')">
                 <tr>
                     <td class="text-start">
-                        <strong>LIQUIDACION IVA en Guaranies:</strong>
+                        <strong>VAT SETTLEMENT in Guaranies:</strong>
                     </td>
                     <td class="text-end">
                         <strong>(5%):</strong>
@@ -425,8 +425,7 @@
                     <span t-att-style="'color: %s;' % o.company_id.secondary_color">IIBB: </span>
                     <!-- <span t-out="o.company_id.l10n_ar_gross_income_type == 'exempt' and
                     'Exento' or o.company_id.l10n_ar_gross_income_number" /> -->
-                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> -
-                        Activities Start: </span>
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> - Activities Start: </span>
                     <!-- <span t-field="o.company_id.l10n_ar_afip_start_date" /> -->
 
                 </div>

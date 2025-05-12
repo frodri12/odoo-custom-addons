@@ -48,14 +48,14 @@
         </record>
 
         <record model='l10n_latam.identification.type' id='it_dc'>
-            <field name='name'>Tarjeta Diplomática</field>
+            <field name='name'>Diplomatic Card</field>
             <field name='description'>Diplomatic Card Tax Exemption</field>
             <field name='country_id' ref='base.py' />
             <field name='l10n_py_dnit_code'>6</field>
             <field name='sequence'>50</field>
         </record>
         <record model='l10n_latam.identification.type' id='it_xx'>
-            <field name='name'>Otro</field>
+            <field name='name'>Other</field>
             <field name='description'>Other</field>
             <field name='country_id' ref='base.py' />
             <field name='l10n_py_dnit_code'>9</field>

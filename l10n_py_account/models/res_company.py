@@ -34,7 +34,7 @@ class ResCompany(models.Model):
         if 'l10n_py_dnit_responsibility_type_id' in vals:
             for company in self:
                 if vals['l10n_py_dnit_responsibility_type_id'] != company.l10n_py_dnit_responsibility_type_id.id and company.sudo()._existing_accounting():
-                    raise UserError(_('Could not change the DNIT Responsibility of this company because there are already accounting entries.'))
+                    raise UserError(_('Could not change the Responsibility of this company because there are already accounting entries.'))
 
         return super().write(vals)
 
@@ -71,7 +71,7 @@ class ResCompany(models.Model):
         
     ########################
 
-    l10n_py_establecimiento = fields.Integer( string="Establecimiento", default=1)
+    l10n_py_establecimiento = fields.Integer( string="Establishment", default=1)
     
     ########################
     l10n_aipy_economic_activity_ids = fields.One2many(

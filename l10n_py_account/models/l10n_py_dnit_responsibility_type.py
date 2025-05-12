@@ -6,7 +6,7 @@ from odoo import models, fields
 class L10nPyDnitResponsibilityType(models.Model):
 
     _name = 'l10n_py.dnit.responsibility.type'
-    _description = 'DNIT Responsibility Type'
+    _description = 'Responsibility Type'
     _order = 'sequence'
 
     name = fields.Char(required=True, index='trigram')
