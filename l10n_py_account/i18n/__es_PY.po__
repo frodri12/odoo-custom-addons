@@ -1051,10 +1051,6 @@ msgstr ""
 msgid "Seconds"
 msgstr ""
 
-#. module: l10n_py_account
-#: model:account.journal,name:l10n_py_account.purchase_journal_selfinvoice
-msgid "Self Invoice Journal"
-msgstr ""
 
 #. module: l10n_py_account
 #: model:ir.model.fields,field_description:l10n_py_account.field_l10n_py_dnit_responsibility_type__sequence

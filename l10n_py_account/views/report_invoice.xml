@@ -30,6 +30,9 @@
                 t-value="o.l10n_latam_document_type_id.code and 'Cod. %02d' % int(o.l10n_latam_document_type_id.code) or ''" />
             <t t-set="report_name" t-value="o.l10n_latam_document_type_id.report_name" />
             <t t-set="header_address" t-value="o.company_id.partner_id" />
+            <t t-set="subtotal_exempt_custom" t-value="0" />
+            <t t-set="subtotal_tax5_custom" t-value="0" />
+            <t t-set="subtotal_tax10_custom" t-value="0" />
             <t t-set="custom_footer">
                 <div class="row">
                     <div name="footer_left_column" class="col-8 text-start">
@@ -425,7 +428,8 @@
                     <span t-att-style="'color: %s;' % o.company_id.secondary_color">IIBB: </span>
                     <!-- <span t-out="o.company_id.l10n_ar_gross_income_type == 'exempt' and
                     'Exento' or o.company_id.l10n_ar_gross_income_number" /> -->
-                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> - Activities Start: </span>
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> - Activities
+                        Start: </span>
                     <!-- <span t-field="o.company_id.l10n_ar_afip_start_date" /> -->
 
                 </div>

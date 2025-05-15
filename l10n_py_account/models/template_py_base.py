@@ -43,7 +43,7 @@ class AccountChartTemplate(models.AbstractModel):
         """ In case of an Paraguay CoA, we modify the default values of the sales journal to be a preprinted journal"""
         return {
             'sale': {
-                "name": "Ventas Preimpreso",
+                "name": "Pre-printed sales",
                 "code": "0001",
                 "l10n_py_dnit_pos_number": 1,
                 "l10n_py_dnit_pos_partner_id": self.env.company.partner_id.id,

@@ -426,3 +426,8 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_py_account.kude_subtotal_taxes
 msgid "<strong>TOTAL:</strong>"
 msgstr ""
+
+#. module: l10n_py_account
+#: model:account.journal,name:l10n_py_account.purchase_journal_selfinvoice
+msgid "Self Invoice Journal"
+msgstr ""

@@ -31,4 +31,10 @@ class L10npyEconomicActivity(models.Model):
         required=True,
         default=lambda self: self.env.company,
         help='Company associated with the economic activity',
-    ) 
+    )
+
+    def _get_l10n_py_dnit_ws_economic_avtivity( self):
+        eco = {}
+        eco.update({"codigo": self.code}) #D131
+        eco.update({"descripcion": self.name}) #D132
+        return eco

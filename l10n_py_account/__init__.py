@@ -18,5 +18,7 @@ def install_languages(env):
 
 def _set_change_values(env):
     install_languages(env)
+    env.cr.execute("UPDATE ir_model_data SET noupdate=false WHERE model = 'res.users' AND name = 'user_admin'")
+    env.cr.execute("UPDATE ir_model_data SET noupdate=false WHERE model = 'res.partner' AND name = 'partner_admin'")
 
     

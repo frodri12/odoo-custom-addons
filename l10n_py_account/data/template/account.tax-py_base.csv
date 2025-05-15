@@ -1,4 +1,4 @@
-id,name,sequence,description,invoice_label,l10n_aipy_tax_base,amount,amount_type,type_tax_use,tax_group_id,"repartition_line_ids/repartition_type",repartition_line_ids/document_type,repartition_line_ids/account_id,price_include_override,description@es,invoice_label@es,name@es
+id,name,sequence,description,invoice_label,l10n_py_tax_base,amount,amount_type,type_tax_use,tax_group_id,"repartition_line_ids/repartition_type",repartition_line_ids/document_type,repartition_line_ids/account_id,price_include_override,description@es,invoice_label@es,name@es
 vat1,VAT 5%,20,VAT Sales (5%),VAT Sales (5%),100,5,percent,sale,tax_group_iva_5,base,invoice,,tax_included,IVA Ventas (5%),IVA Ventas (5%),IVA 5%
 "",,,,,,,,,,"tax",invoice,ri_iva_debito_fiscal,,,
 "",,,,,,,,,,base,refund,,,,

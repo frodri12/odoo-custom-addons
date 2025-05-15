@@ -47,6 +47,8 @@ Demo data for testing:
     'data': [
         'security/ir.model.access.csv',
 
+        'data/res_user_data.xml',
+        'data/res_partner_data.xml',
         'data/l10n_latam_identification_type_data.xml',
         'data/l10n_py_dnit_responsibility_type_data.xml',
         'data/uom_uom_data.xml',
@@ -55,6 +57,7 @@ Demo data for testing:
         'data/res_country_state_data.xml',
         'data/l10n_py_district_data.xml',
         'data/l10n_py_city_data.xml',
+        'data/l10n_py_regime_type_data.xml',
 
         'views/dnit_menuitem.xml',
         'views/l10n_py_dnit_responsibility_type_view.xml',
@@ -68,6 +71,7 @@ Demo data for testing:
         'views/account_move_view.xml',
         'views/l10n_py_economic_activity_view.xml',
         'views/report_invoice.xml',
+        'views/account_tax_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
@@ -75,6 +79,7 @@ Demo data for testing:
         'demo/res_partner_demo.xml',
         'demo/product_product_demo.xml',
     ],
+    'installable': True,
     'license': 'LGPL-3',
     'pre_init_hook': '_set_change_values',
 }
