@@ -192,7 +192,6 @@ class AccountMove(models.Model):
                 json.dump(_data, f, indent=4)
         return all
 
-        
     # Buttons
     def _post(self, soft=True):
         py_invoices = self.filtered(lambda x: x.is_invoice() and x.country_code == "PY")
