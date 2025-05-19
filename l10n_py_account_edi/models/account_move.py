@@ -3,33 +3,84 @@ from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 
 import logging
+from datetime import datetime
+import json
+import os.path
+from os import path
+import requests
+
+from . import libpydate
+from . import libpyrandom
+from . import libpyaccount
+from . import libpydnitws
+
 
 _logger = logging.getLogger(__name__)
 
 _params = {}
 _data = {}
-_random_code = "0000000000"
 
 class AccountMove(models.Model):
 
     _inherit = "account.move"
 
-    l10n_py_dnit_cdc = fields.Char('Authorization Code', copy=False, size=44, help="Paraguay: authorization code given by DNIT after electronic invoice is created and valid.")
+    l10n_py_dnit_cdc = fields.Char('Authorization Code', copy=False, size=44, 
+         help="Paraguay: authorization code given by DNIT after electronic invoice is created and valid.")
 
-    l10n_py_dnit_ws_response_cdc = fields.Char(string="CDC")
-    l10n_py_dnit_ws_response_fecproc = fields.Char(string="Fecha de procesado")
-    l10n_py_dnit_ws_response_digval = fields.Char(string="Digito de verificacion")
-    l10n_py_dnit_ws_response_estres = fields.Char(string="Estado") ## A: Aprobado, O: Aprobado con Observacion, R: Rechazado, E: Error, P; Pendiente
-    l10n_py_dnit_ws_response_protaut  = fields.Char(string="Protocolo de autorizacion")
-    l10n_py_dnit_ws_response_codres = fields.Char(string="Codigo de respuesta")
-    l10n_py_dnit_ws_response_msgres = fields.Char(string="Mensaje de respuesta")
+    l10n_py_dnit_ws_response_cdc = fields.Char(string="CDC", readonly=True, tracking=True, copy=False)
+    l10n_py_dnit_ws_response_fecproc = fields.Char(string="Fecha de procesado", readonly=True, tracking=True, copy=False)
+    l10n_py_dnit_ws_response_digval = fields.Char(string="Digito de verificacion", readonly=True, tracking=True, copy=False)
+    l10n_py_dnit_ws_response_estres = fields.Selection(selection=[
+            ('P', 'Pending'),('E', 'Error'),('A', 'Aproved'),
+            ('O', 'Aproved with Observations'),('R', 'Rejected'),
+        ], string='DNIT Status', default='P', readonly=True,tracking=True, copy=False)
+    
+    l10n_py_dnit_ws_response_protaut  = fields.Char(string="Protocolo de autorizacion", readonly=True, tracking=True, copy=False)
+    l10n_py_dnit_ws_response_codres = fields.Char(string="Codigo de respuesta", readonly=True, tracking=True, copy=False)
+    l10n_py_dnit_ws_response_msgres = fields.Char(string="Mensaje de respuesta", readonly=True, tracking=True, copy=False)
 
-    l10n_py_dnit_ws_request_json = fields.Text(string="JSON de envio")
-    l10n_py_dnit_ws_request_xml = fields.Text(string="XML de envio")
-    l10n_py_dnit_ws_response_json = fields.Text(string="JSON de respuesta")
+    l10n_py_dnit_ws_request_json = fields.Text(string="JSON de envio", readonly=True, copy=False)
+    l10n_py_dnit_ws_request_xml = fields.Text(string="XML de envio", readonly=True, copy=False)
+    l10n_py_dnit_ws_response_json = fields.Text(string="JSON de respuesta", readonly=True, copy=False)
+
+    l10n_py_dnit_ws_random_code = fields.Char(string='Random Code', readonly=True, store=True, index = True,tracking=True, copy=False)
+
+    def _get_l10n_py_ws_dnit_document_asociado( self):
+        docAsoc = {}
+        factura = self.reversed_entry_id
+        if factura and factura.l10n_py_dnit_ws_response_cdc and factura.l10n_py_dnit_ws_response_cdc != None:
+            docAsoc.update({"formato": 1}) #H002
+            docAsoc.update({"cdc": factura.l10n_py_dnit_ws_response_cdc}) #H004
+        elif factura and factura.l10n_py_dnit_ws_response_cdc == None:
+            docAsoc.update({"formato": 2}) #H002
+            tipo = factura.move_type
+            if tipo == 'out_invoice':
+                docAsoc.update({"tipo": 1}) #H009
+            elif tipo == 'out_refund':
+                docAsoc.update({"tipo": 2}) #H009
+            elif tipo == 'out_receipt':
+                docAsoc.update({"tipo": 4}) #H009
+            elif tipo == 'in_refund':
+                docAsoc.update({"tipo": 3}) #H009
+            else:
+                raise UserError(_("Document type is invalid (%s)" % tipo))
+            docAsoc.update({"timbrado": factura.journal_id.l10n_py_dnit_timbrado}) #H005
+            nroFactura = factura.l10n_latam_document_number
+            docAsoc.update({"establecimiento": nroFactura.split("-")[0]}) #H006
+            docAsoc.update({"punto": nroFactura.split("-")[1]}) #H007
+            docAsoc.update({"numero": nroFactura.split("-")[2]}) #H008
+        return docAsoc
+
+    def _get_l10n_py_dnit_ws_url( self, key):
+        sKey = 'l10n_py_edi.url.' + key + '.test' if self.company_id.l10n_py_dnit_ws_environment == 'testing' else '.prod'
+
+        ICP = self.env['ir.config_parameter'].sudo()
+        sRet = str(ICP.get_param(sKey))
+        return sRet
+
 
     # Prepare Request Data for webservices. Generate the JSON file for the DNIT
-    def _l10n_py_prepare_ws_data( self):
+    def _prepare_l10n_py_ws_data( self):
         _params = {}
         _data = {}
         # Set Params
@@ -53,7 +104,93 @@ class AccountMove(models.Model):
             if value and value > 0:
                 _params.update({ "tipoRegimen" : value }) 
 
-        #_data.update({ key : value })
+        _data.update({ "fecha" : libpydate.from_date2tz(self, datetime.now()).strftime("%Y-%m-%dT%H:%M:%S") }) #A004
+        _data.update({ "codigoSeguridadAleatorio" : libpyrandom.generate_random_code(self)}) #B004
+        _data.update({ "tipoEmision" : 1}) #B002
+        _data.update({ "tipoDocumento" : libpyaccount.get_tipoDocumento(self.move_type)}) #C002
+        _data.update({ "establecimiento" : self.l10n_latam_document_number.split("-")[0]}) 
+        _data.update({ "punto" : self.l10n_latam_document_number.split("-")[1]}) #C006
+        _data.update({ "numero" : self.l10n_latam_document_number.split("-")[2]}) #C010
+        _data.update({ "moneda" : self.currency_id.name}) #D015
+        if self.currency_id.name != 'PYG':
+            _data.update({ "cambio" : 1 / self.invoice_currency_rate}) #D018
+            _data.update({ "condicionTipoCambio" : 1}) #D017
+        _data.update({ "cliente" : self.partner_id._get_l10n_py_dnit_ws_cliente()}) 
+        if self.move_type == 'out_invoice':
+            _data.update({ "factura" : libpyaccount.get_factura()}) #E010
+            _data.update({ "condicion" : libpyaccount.get_condicion_operacion(self.invoice_date, self.invoice_date_due)}) 
+        elif self.move_type == 'out_refund':
+            _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
+            _data.update({ "documentoAsociado" : self._get_l10n_py_ws_dnit_document_asociado()}) 
+        ## Queda pendiente de analisis
+        #elif self.move_type == 'out_receipt':
+            ## Recibos a clientes
+        elif self.move_type == 'in_invoice':
+            ## Solo para autofactura
+            return 4
+        elif self.move_type == 'in_refund':
+            _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
+        else:
+            raise UserError(_("Document type is invalid (%s)" % self.move_type))
+        ## Items
+        items = []
+        isService = False
+        isProduct = False
+        globalTaxTye = "0"
+        for rec in self.invoice_line_ids:
+            if rec.display_type == "product":
+                items.append(rec._get_l10n_py_dnit_ws_item())
+                if rec.product_id.type == 'combo':
+                    isProduct = True
+                if rec.product_id.type == 'service':  # consu, service, combo
+                    isService = True
+                if rec.product_id.type == 'consu':
+                    isProduct = True
+                taxType = rec.tax_ids.l10n_py_tax_type
+                if globalTaxTye == "0":
+                    globalTaxTye = taxType
+                elif globalTaxTye == "5":
+                    if taxType == "2":
+                        globalTaxTye = "2"
+                    elif globalTaxTye == "4":
+                        globalTaxTye = taxType
+                elif globalTaxTye == "3":
+                    if taxType == "1" or taxType == "5":
+                        globalTaxTye = "5"
+                    elif taxType == "2":
+                        globalTaxTye = "2"
+                elif globalTaxTye == "1":
+                    if taxType == "3" or taxType == "5":
+                        globalTaxTye = "5"
+                    elif taxType == "2":
+                        globalTaxTye = "2"
+        _data.update({ "items" : items})
+        tipoTransaccion = 0
+        if isService and isProduct:
+            tipoTransaccion = 3
+        elif isService:
+            tipoTransaccion = 2
+        else:
+            tipoTransaccion = 1
+        if self.move_type == 'out_invoice' and tipoTransaccion != 0:
+            _data.update({ "tipoTransaccion" : tipoTransaccion}) #D011
+        _data.update({ "tipoImpuesto" : globalTaxTye})
+        all = {}
+        all.update({"empresa": self.company_id.vat.split("-")[0]})
+        all.update({"servicio": "de"})
+        #all.update({"idCSC1": self.company_id.l10n_aipy_idcsc1_test if self.company_id.l10n_aipy_testing_mode else self.company_id.l10n_aipy_idcsc1_prod})
+        #all.update({"idCSC2": self.company_id.l10n_aipy_idcsc2_test if self.company_id.l10n_aipy_testing_mode else self.company_id.l10n_aipy_idcsc2_prod})
+        #all.update({"produccion": not self.company_id.l10n_aipy_testing_mode})
+        all.update({"params": _params})
+        all.update({"data": _data})
+        _logger.error("All JSON Data: \n%s\n", json.dumps(all, indent=4))
+        path_vscode_logs = "/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs"
+        if path.exists(path_vscode_logs):
+            with open(path_vscode_logs + '/params.json', 'w') as f:
+                json.dump(_params, f, indent=4)
+            with open(path_vscode_logs + '/data.json', 'w') as f:
+                json.dump(_data, f, indent=4)
+        return all
 
         
     # Buttons
@@ -135,68 +272,62 @@ class AccountMove(models.Model):
         If there are errors it means that the invoice has been Rejected by DNIT and we raise an user error with the
         processed info about the error and some hint about how to solve it. The invoice is not valided.
         """
+        self._prepare_l10n_py_ws_data()
         return
 
-"""
-    def _l10n_ar_do_afip_ws_request_cae(self, client, auth, transport):
-        for inv in self.filtered(lambda x: x.journal_id.l10n_py_dnit_pos_system in ('RLI_RLM','AURLI_RLM','BFERCEL','FEERCEL','CPERCEL')and x.l10n_py_dnit_ws_response_estres not in ('A','O')):
-            #afip_ws = inv.journal_id.l10n_ar_afip_ws
-            errors = obs = events = ''
-            request_data = False
-            return_codes = []
-            values = {}
+    def __process_l10n_py_dnit_ws_request(self, all):
+        response = requests.post(
+            self._get_l10n_py_dnit_ws_url("recibe"),  json=json.loads(json.dumps(all)), allow_redirects=False)    
+        if response.status_code == 301:
+            response = requests.post( response.headers['Location'],  json=json.loads(json.dumps(all)))
+        if response.status_code != 200:
+            _logger.error( "Error: %s" % str(response.status_code))
+            self.l10n_py_dnit_ws_response_fecproc = datetime.now()
+            self.l10n_py_dnit_ws_response_estres = 'E'
+            self.l10n_py_dnit_ws_response_codres = str(response.status_code)
+            self.l10n_py_dnit_ws_response_msgres = response.text
+            #return self._aipy_create_notification( _('Error!'), 'danger', str(response.status_code) + " " + response.text)
+            return False
+        else:
+            return self._aipy_json_responseDNIT(response)
 
-            #self.l10n_ar_check_rate()
+    def _aipy_json_responseDNIT( self, response_data):
+        """
+        Process the response from the DNIT
+        """
+        response = response_data.json()
+        # {
+        #   'dEstRes': E, A, O, R
+        #   'dCodRes': 0 o 260 o otro numero
+        #   'dMsgRes': Mensaje de error
+        #   'dId': CDC
+        #   'dFecProc': Fecha en modo texto
+        #   'dEstResDet':  Aprobado, Aprobado con observaciones, Rechazado
+        #   'dProtAut': Codigo que no se para que sirve
+        # }
+        self.l10n_py_dnit_ws_response_json = json.dumps(response, indent=4)
+        self.l10n_py_dnit_ws_response_fecproc = datetime.now()
 
-            # We need to call a different method for every webservice type and assemble the returned errors if they exist
-            if afip_ws == 'wsfex':
-                ws_method = 'FEXAuthorize'
-                last_id = client.service.FEXGetLast_ID(auth).FEXResultGet.Id
-                request_data = inv.wsfex_get_cae_request(last_id+1, client)
-                self._ws_verify_request_data(client, auth, ws_method, request_data)
-                response = client.service[ws_method](auth, request_data)
-                result = response.FEXResultAuth
-                if response.FEXErr.ErrCode != 0 or response.FEXErr.ErrMsg != 'OK':
-                    errors = '\n* Code %s: %s' % (response.FEXErr.ErrCode, response.FEXErr.ErrMsg)
-                    return_codes += [str(response.FEXErr.ErrCode)]
-                if response.FEXEvents.EventCode != 0 or response.FEXEvents.EventMsg != 'Ok':
-                    events = '\n* Code %s: %s' % (response.FEXEvents.EventCode, response.FEXEvents.EventMsg)
-                    return_codes += [str(response.FEXEvents.EventCode)]
+        response_value = libpydnitws.process_response_dnit( response)
+        if response_value.get('dEstRes') == 'E':
+            self.l10n_py_dnit_ws_response_estres = 'E'
+            self.l10n_py_dnit_ws_response_codres = response_value.get('dCodRes')
+            self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
+            msg = "Error: " + str(response_value.get('dCodRes')) + " " + str(response_value.get('dMsgRes'))
+            self.message_post(body=msg, message_type='notification')
+            return False
 
-                if result:
-                    if result.Motivos_Obs:
-                        obs = '\n* Code ???: %s' % result.Motivos_Obs
-                        return_codes += [result.Motivos_Obs]
-                    if result.Reproceso == 'S':
-                        return_codes += ['reprocess']
-                    if result.Resultado != 'A':
-                        if not errors:
-                            return_codes += ['rejected']
-                    else:
-                        values = {'l10n_ar_afip_auth_mode': 'CAE',
-                                  'l10n_ar_afip_auth_code': result.Cae,
-                                  'l10n_ar_afip_auth_code_due': datetime.strptime(result.Fch_venc_Cae, '%Y%m%d').date(),
-                                  'l10n_ar_afip_result': result.Resultado}
+        self.l10n_py_dnit_ws_response_cdc = response_value.get('dEstRes')
+        self.l10n_py_dnit_ws_response_fecproc = datetime.strptime(str(response_value.get('dFecProc')), "%Y-%m-%dT%H:%M:%S")  
+        self.l10n_py_dnit_ws_response_estres = response_value.get('dEstRes')
+        self.l10n_py_dnit_ws_response_codres = response_value.get('dCodRes')
+        self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
 
-            return_info = inv._prepare_return_msg(afip_ws, errors, obs, events, return_codes)
-            afip_result = values.get('l10n_ar_afip_result')
-            xml_response, xml_request = transport.xml_response, transport.xml_request
-            if afip_result not in ['A', 'O']:
-                if not self.env.context.get('l10n_ar_invoice_skip_commit'):
-                    self.env.cr.rollback()
-                if inv.exists():
-                    # Only save the xml_request/xml_response fields if the invoice exists.
-                    # It is possible that the invoice will rollback as well e.g. when it is automatically created:
-                    #   * creating credit note with full reconcile option
-                    #   * creating/validating an invoice from subscription/sales
-                    inv.sudo().write({'l10n_ar_afip_xml_request': xml_request, 'l10n_ar_afip_xml_response': xml_response})
-                if not self.env.context.get('l10n_ar_invoice_skip_commit'):
-                    self.env.cr.commit()
-                return return_info
-            values.update(l10n_ar_afip_xml_request=xml_request, l10n_ar_afip_xml_response=xml_response)
-            inv.sudo().write(values)
-            if return_info:
-                inv.message_post(body=Markup('<p><b>%s%s</b></p>') % (_('AFIP Messages'), plaintext2html(return_info, 'em')))
-       
-"""       
+        if response_value.get('dEstRes') == None or response_value.get('dEstRes') == 'R':
+            msg = "Warning: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
+            return False
+
+        msg = "Success: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
+        return True
+
 

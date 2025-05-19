@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': "Paraguayan Electronic Invoicing",
     'website': "https://www.avatar.com.py",
@@ -13,6 +13,7 @@
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
+        'data/ir_config_parameter_data.xml',
         'views/res_config_settings_view.xml',
     ],
     # only loaded in demonstration mode

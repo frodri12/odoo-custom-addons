@@ -1,6 +1,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
+import re
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 class ResCompany(models.Model):
 
@@ -96,10 +101,11 @@ class ResCompany(models.Model):
         est.update({"distrito": int(self.l10n_py_district_id.code)}) #D113
         est.update({"ciudad": int(self.l10n_py_city_id.code)}) #D115
         if self.phone:
-            if self.phone.__len__() < 6 or self.phone.__len__() > 15:
+            phone = re.sub('[^0-9]', '', self.phone)
+            if phone.__len__() < 6 or phone.__len__() > 15:
                 raise UserError(_("Phone number must be between 6 and 15 digits"))
             else:
-                est.update({"telefono": self.phone}) #D117
+                est.update({"telefono": phone}) #D117
         else:
             raise UserError(_("Phone number is required"))
         if self.email:

@@ -201,5 +201,23 @@ class ResPartner(models.Model):
         cliente.update({"razonSocial": self.name if self.name else "Sin Nombre"}) #D211
 
         cliente.update({"pais": pais}) #D203
-
+        if pais == 'PRY':
+            if departamento and distrito and ciudad and pais == 'PRY':
+                cliente.update({"departamento": departamento}) #D219
+                cliente.update({"distrito": distrito}) #D221
+                cliente.update({"ciudad": ciudad}) #D223
+                cliente.update({"direccion": self.street}) #D213
+                cliente.update({"numeroCasa": self.l10n_py_house if self.l10n_py_house else 1}) #D218
+            else:
+                cliente.update({"direccion": self.street}) #D213
+                cliente.update({"numeroCasa": self.l10n_py_house if self.l10n_py_house else 0}) #D218
+        else:
+            cliente.update({"direccion": self.street}) #D213
+            cliente.update({"numeroCasa": self.l10n_py_house if self.l10n_py_house else 0}) #D218
+        if self.phone:
+            cliente.update({"telefono": re.sub('[^0-9]', '', self.phone)}) #D214
+        if self.mobile:
+            cliente.update({"celular": re.sub('[^0-9]', '', self.mobile)}) #D215
+        if self.email:
+            cliente.update({"email": self.email}) #D215
         return cliente
