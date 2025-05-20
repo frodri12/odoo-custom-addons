@@ -1,5 +1,6 @@
 #
 
+from odoo.addons.account.models.account_move import AccountMove
 from odoo import _
 from odoo.exceptions import UserError
 
@@ -75,3 +76,27 @@ def get_motivo_nce(ref):
         ncnd.update({"motivo": '2'}) #E401
     return ncnd
 
+def get_docuemnto_asociado( moveId:AccountMove):
+    _TYPE_DOC = {
+            'entry': '0',
+            'out_invoice': '1',
+            'out_refund': '2',
+            'in_invoice': '0',
+            'in_refund': '3',
+            'out_receipt': '4',
+            'in_receipt': '0',
+
+    }
+    documento = {}
+    if moveId and moveId.l10n_py_dnit_ws_response_cdc and moveId.l10n_py_dnit_ws_response_cdc != None:
+        documento.update({"formato":1}) #H002 Documento electronico
+        documento.update({"cdc":moveId.l10n_py_dnit_ws_response_cdc}) #H004
+    elif moveId:
+        documento.update({"formato":2}) #H002 Documento impreso
+        documento.update({"tipo":_TYPE_DOC[moveId.move_type]}) #H009
+        documento.update({"timbrado": moveId.journal_id.l10n_py_dnit_timbrado}) #H005
+        exp, pos, numbero = moveId.l10n_latam_document_number.split('-')
+        documento.update({"establecimiento": exp}) #H006
+        documento.update({"punto": pos}) #H007
+        documento.update({"numero": numbero}) #H008
+    return documento

@@ -220,30 +220,4 @@ class AccountJournal(models.Model):
     l10n_py_dnit_timbrado_start_date_test = fields.Date(string="Fecha de inicio dell timbrado (TEST)")
     l10n_py_dnit_timbrado_end_date = fields.Date(string="Fecha de fin dell timbrado (PROD)")
     l10n_py_dnit_timbrado_end_date_test = fields.Date(string="Fecha de fin dell timbrado (TEST)")
-
-    def _get_l10n_py_dnit_ws_timbrado( self, CompanyId):
-        timbrado = {}
-        auth_code = self.l10n_py_dnit_timbrado
-        auth_date = self.l10n_py_dnit_timbrado_start_date
-        auth_duo = self.l10n_py_dnit_timbrado_end_date
-        if CompanyId.l10n_py_dnit_ws_environment == 'testing':
-            auth_code = self.l10n_py_dnit_timbrado_test
-            auth_date = self.l10n_py_dnit_timbrado_start_date_test
-            auth_duo = self.l10n_py_dnit_timbrado_end_date_test
-
-        if not auth_code or not auth_date:
-            raise UserError(_("Timbrado number and date are required at the journal definition"))
-        if auth_code.__len__() != 8 and auth_code.__len__() != 11:
-            raise UserError(_("Timbrado number must be 8 digits (12345678) or 11 digits (AA-12345678)"))
-        if auth_code.__len__() == 8:
-            timbrado.update({'timbradoNumero':auth_code}) #C004
-        else:
-            if auth_code.split("-").__len__() != 2:
-                raise UserError(_("Timbrado number must be 8 digits (12345678) or 11 digits (AA-12345678)"))
-            timbrado.update({'timbradoNumero':auth_code.split("-")[1]}) #C004
-            timbrado.update({'numeroSerie':auth_code.split("-")[0]}) #C010
-        if auth_date:
-            timbrado.update({'timbradoFecha':auth_date.strftime("%Y-%m-%d")}) #C008
-        else:
-            raise UserError(_("Timbrado date is required at the journal definition"))
-        return timbrado
+    

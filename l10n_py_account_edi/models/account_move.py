@@ -43,33 +43,8 @@ class AccountMove(models.Model):
     l10n_py_dnit_ws_request_xml = fields.Text(string="XML de envio", readonly=True, copy=False)
     l10n_py_dnit_ws_response_json = fields.Text(string="JSON de respuesta", readonly=True, copy=False)
 
-    l10n_py_dnit_ws_random_code = fields.Char(string='Random Code', readonly=True, store=True, index = True,tracking=True, copy=False)
-
-    def _get_l10n_py_ws_dnit_document_asociado( self):
-        docAsoc = {}
-        factura = self.reversed_entry_id
-        if factura and factura.l10n_py_dnit_ws_response_cdc and factura.l10n_py_dnit_ws_response_cdc != None:
-            docAsoc.update({"formato": 1}) #H002
-            docAsoc.update({"cdc": factura.l10n_py_dnit_ws_response_cdc}) #H004
-        elif factura and factura.l10n_py_dnit_ws_response_cdc == None:
-            docAsoc.update({"formato": 2}) #H002
-            tipo = factura.move_type
-            if tipo == 'out_invoice':
-                docAsoc.update({"tipo": 1}) #H009
-            elif tipo == 'out_refund':
-                docAsoc.update({"tipo": 2}) #H009
-            elif tipo == 'out_receipt':
-                docAsoc.update({"tipo": 4}) #H009
-            elif tipo == 'in_refund':
-                docAsoc.update({"tipo": 3}) #H009
-            else:
-                raise UserError(_("Document type is invalid (%s)" % tipo))
-            docAsoc.update({"timbrado": factura.journal_id.l10n_py_dnit_timbrado}) #H005
-            nroFactura = factura.l10n_latam_document_number
-            docAsoc.update({"establecimiento": nroFactura.split("-")[0]}) #H006
-            docAsoc.update({"punto": nroFactura.split("-")[1]}) #H007
-            docAsoc.update({"numero": nroFactura.split("-")[2]}) #H008
-        return docAsoc
+    l10n_py_dnit_ws_random_code = fields.Char(string='Random Code', 
+        readonly=True, store=True, index = True,tracking=True, copy=False)
 
     def _get_l10n_py_dnit_ws_url( self, key):
         sKey = 'l10n_py_edi.url.' + key + '.test' if self.company_id.l10n_py_dnit_ws_environment == 'testing' else '.prod'
@@ -121,7 +96,7 @@ class AccountMove(models.Model):
             _data.update({ "condicion" : libpyaccount.get_condicion_operacion(self.invoice_date, self.invoice_date_due)}) 
         elif self.move_type == 'out_refund':
             _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
-            _data.update({ "documentoAsociado" : self._get_l10n_py_ws_dnit_document_asociado()}) 
+            _data.update({ "documentoAsociado" : libpyaccount.get_docuemnto_asociado(self.reversed_entry_id)}) #H001
         ## Queda pendiente de analisis
         #elif self.move_type == 'out_receipt':
             ## Recibos a clientes
@@ -184,7 +159,7 @@ class AccountMove(models.Model):
         all.update({"params": _params})
         all.update({"data": _data})
         _logger.error("All JSON Data: \n%s\n", json.dumps(all, indent=4))
-        path_vscode_logs = "/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/logs"
+        path_vscode_logs = "/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/TestLibXML/data"
         if path.exists(path_vscode_logs):
             with open(path_vscode_logs + '/params.json', 'w') as f:
                 json.dump(_params, f, indent=4)

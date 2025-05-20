@@ -1,7 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
-import re
+
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -89,42 +89,4 @@ class ResCompany(models.Model):
         string='Economic Activities',
         help='Economic activities associated with the country'
     )
-
-    def _get_l10n_py_dnit_ws_establecimiento( self):
-        est = {}
-        est.update({"codigo": "%03d" % self.l10n_py_establecimiento})
-        est.update({"direccion": self.street}) #D107
-        est.update({"numeroCasa": self.l10n_py_house if self.l10n_py_house else 0}) #D108
-        if self.street2:
-            est.update({"complementoDireccion1": self.street2}) #D109
-        est.update({"departamento": int(self.state_id.code)}) #D111
-        est.update({"distrito": int(self.l10n_py_district_id.code)}) #D113
-        est.update({"ciudad": int(self.l10n_py_city_id.code)}) #D115
-        if self.phone:
-            phone = re.sub('[^0-9]', '', self.phone)
-            if phone.__len__() < 6 or phone.__len__() > 15:
-                raise UserError(_("Phone number must be between 6 and 15 digits"))
-            else:
-                est.update({"telefono": phone}) #D117
-        else:
-            raise UserError(_("Phone number is required"))
-        if self.email:
-            if self.email.find(",") > -1:
-                est.update({"email": self.email.split(",")[0]}) #D118
-            else:
-                est.update({"email": self.email}) #D118
-        else:
-            raise UserError(_("Email is required"))
-        estabecimientos = []
-        estabecimientos.append(est)
-        return estabecimientos
-
-    def _get_l10n_py_dnit_ws_economic_activities( self):
-        ecos = []
-        ecos_count = 0
-        for rec in self.l10n_aipy_economic_activity_ids:
-            ecos.append(rec._get_l10n_py_dnit_ws_economic_avtivity())
-            ecos_count += 1
-        if ecos_count == 0:
-            raise UserError(_("Economic activity is required for te company"))
-        return ecos
+    
