@@ -316,3 +316,6 @@ class AccountMove(models.Model):
         self.l10n_py_dnit_auth_code = self.partner_id.l10n_py_dnit_auth_code
         self.l10n_py_dnit_auth_startdate = self.partner_id.l10n_py_dnit_auth_startdate
         self.l10n_py_dnit_auth_enddate = self.partner_id.l10n_py_dnit_auth_enddate
+
+    l10n_py_dnit_qr = fields.Char("QR Code")
+    

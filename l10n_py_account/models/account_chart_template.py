@@ -20,7 +20,7 @@ class AccountChartTemplate(models.AbstractModel):
             company.write({
                 'l10n_py_dnit_responsibility_type_id': coa_responsibility.id,
                 'country_id': self.env['res.country'].search([('code', '=', 'PY')]).id,
-                'tax_calculation_rounding_method': 'round_globally',
+                'tax_calculation_rounding_method': 'round_per_line',    ### 'round_globally',
             })
 
             current_identification_type = company.partner_id.l10n_latam_identification_type_id

@@ -48,15 +48,16 @@ def _get_condicion_operacion_credito(date, date_due): #E640
     credito.update({"plazo": str(diff.days) + " días"}) #E643
     return credito
 
-def _get_condicion_operacion_contado_entregas(): #E605
+def _get_condicion_operacion_contado_entregas(monto): #E605
     entregaContado = {}
     entregaContado.update({"tipo": 1}) #E606
+    entregaContado.update({"monto": monto}) 
     entregaContado.update({"moneda": "PYG"}) #E609
     entregas = []
     entregas.append(entregaContado)
     return entregas
 
-def get_condicion_operacion( date, date_due): #E600
+def get_condicion_operacion( date, date_due, monto): #E600
     condicion = {}
 
     if date_due and date_due > date:
@@ -64,7 +65,7 @@ def get_condicion_operacion( date, date_due): #E600
         condicion.update({"credito": _get_condicion_operacion_credito(date, date_due)}) #E640
     else:
         condicion.update({"tipo": 1}) #E601 Contado
-        condicion.update({"entregas": _get_condicion_operacion_contado_entregas()}) #605
+        condicion.update({"entregas": _get_condicion_operacion_contado_entregas(monto)}) #605
     return condicion
 
 def get_motivo_nce(ref):

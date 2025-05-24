@@ -93,7 +93,7 @@ class AccountMove(models.Model):
         _data.update({ "cliente" : self.partner_id._get_l10n_py_dnit_ws_cliente()}) 
         if self.move_type == 'out_invoice':
             _data.update({ "factura" : libpyaccount.get_factura()}) #E010
-            _data.update({ "condicion" : libpyaccount.get_condicion_operacion(self.invoice_date, self.invoice_date_due)}) 
+            _data.update({ "condicion" : libpyaccount.get_condicion_operacion(self.invoice_date, self.invoice_date_due, self.amount_total)}) 
         elif self.move_type == 'out_refund':
             _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
             _data.update({ "documentoAsociado" : libpyaccount.get_docuemnto_asociado(self.reversed_entry_id)}) #H001
@@ -102,7 +102,7 @@ class AccountMove(models.Model):
             ## Recibos a clientes
         elif self.move_type == 'in_invoice':
             ## Solo para autofactura
-            return 4
+            _data.update({ "autoFactura" : self.partner_id.get_l10n_py_dnit_ws_autofactura(self.company_id)})
         elif self.move_type == 'in_refund':
             _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
         else:
@@ -153,18 +153,26 @@ class AccountMove(models.Model):
         all = {}
         all.update({"empresa": self.company_id.vat.split("-")[0]})
         all.update({"servicio": "de"})
-        #all.update({"idCSC1": self.company_id.l10n_aipy_idcsc1_test if self.company_id.l10n_aipy_testing_mode else self.company_id.l10n_aipy_idcsc1_prod})
-        #all.update({"idCSC2": self.company_id.l10n_aipy_idcsc2_test if self.company_id.l10n_aipy_testing_mode else self.company_id.l10n_aipy_idcsc2_prod})
-        #all.update({"produccion": not self.company_id.l10n_aipy_testing_mode})
+        all.update({"idCSC1": self.company_id.l10n_py_dnit_ws_idcsc1_test if self.company_id.l10n_py_dnit_ws_environment == 'testing' else self.company_id.l10n_py_dnit_ws_idcsc1_prod})
+        all.update({"idCSC2": self.company_id.l10n_py_dnit_ws_idcsc2_test if self.company_id.l10n_py_dnit_ws_environment == 'testing' else self.company_id.l10n_py_dnit_ws_idcsc2_prod})
+        all.update({"produccion": False if self.company_id.l10n_py_dnit_ws_environment == "testing" else True})
         all.update({"params": _params})
         all.update({"data": _data})
-        _logger.error("All JSON Data: \n%s\n", json.dumps(all, indent=4))
+        options = {}
+        if self.currency_id.name == 'PYG':
+            options.update({"partialTaxDecimals": 0})
+        elif self.currency_id.name == 'USD':
+            options.update({"partialTaxDecimals": 2})
+        all.update({"options": options})
+        #_logger.error("All JSON Data: \n%s\n", json.dumps(all, indent=4))
         path_vscode_logs = "/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/TestLibXML/data"
         if path.exists(path_vscode_logs):
             with open(path_vscode_logs + '/params.json', 'w') as f:
                 json.dump(_params, f, indent=4)
             with open(path_vscode_logs + '/data.json', 'w') as f:
                 json.dump(_data, f, indent=4)
+            with open(path_vscode_logs + '/options.json', 'w') as f:
+                json.dump(options, f, indent=4)
         return all
 
     # Buttons
@@ -182,7 +190,7 @@ class AccountMove(models.Model):
 
             validated += super(AccountMove, inv)._post(soft=soft)
 
-            _logger.error("Partner: %s Documento: %s", inv.partner_id.name, inv.l10n_latam_document_number)
+            _logger.error("Procesando - Partner: %s Documento: %s", inv.partner_id.name, inv.l10n_latam_document_number)
             ### La llamada a la SET
             #return_info = inv._l10n_ar_do_afip_ws_request_cae(client, auth, transport)
             return_info = inv._l10n_py_do_dnit_ws_request()
@@ -194,8 +202,8 @@ class AccountMove(models.Model):
             # If we get CAE from AFIP then we make commit because we need to save the information returned by AFIP
             # in Odoo for consistency, this way if an error ocurrs later in another invoice we will have the ones
             # correctly validated in AFIP in Odoo (CAE, Result, xml response/request).
-            if not self.env.context.get('l10n_py_invoice_skip_commit'):
-                self._cr.commit()
+            #if not self.env.context.get('l10n_py_invoice_skip_commit'):
+            self._cr.commit()
 
         if error_invoice:
             if error_invoice.exists():
@@ -203,7 +211,7 @@ class AccountMove(models.Model):
                     partner_name=error_invoice.partner_id.name, invoice=error_invoice.id)
             else:
                 msg = _('We couldn\'t validate the invoice in DNIT.')
-            msg += _('This is what we get:\n%s\n\nPlease make the required corrections and try again', str(return_info))
+            msg += _('This is what we get:\n%s\n\nPlease make the required corrections and try again', str(return_info) + self.l10n_latam_document_number)
 
             # if we've already validate any invoice, we've commit and we want to inform which invoices were validated
             # which one were not and the detail of the error we get. This ins neccesary because is not usual to have a
@@ -246,30 +254,44 @@ class AccountMove(models.Model):
         If there are errors it means that the invoice has been Rejected by DNIT and we raise an user error with the
         processed info about the error and some hint about how to solve it. The invoice is not valided.
         """
-        self._prepare_l10n_py_ws_data()
-        return
-
-    def __process_l10n_py_dnit_ws_request(self, all):
+        all_data = self._prepare_l10n_py_ws_data()
+        self.l10n_py_dnit_ws_request_json = all_data
         response = requests.post(
-            self._get_l10n_py_dnit_ws_url("recibe"),  json=json.loads(json.dumps(all)), allow_redirects=False)    
+            self._get_l10n_py_dnit_ws_url("recibe"),  json=json.loads(json.dumps(all_data)), allow_redirects=False)
         if response.status_code == 301:
-            response = requests.post( response.headers['Location'],  json=json.loads(json.dumps(all)))
+            response = requests.post( response.headers['Location'],  json=json.loads(json.dumps(all_data)))
         if response.status_code != 200:
             _logger.error( "Error: %s" % str(response.status_code))
-            self.l10n_py_dnit_ws_response_fecproc = datetime.now()
             self.l10n_py_dnit_ws_response_estres = 'E'
+            self.l10n_py_dnit_ws_response_fecproc = datetime.now()
+            self.l10n_py_dnit_ws_response_cdc = None
+            self.l10n_py_dnit_ws_response_digval = None
+            self.l10n_py_dnit_ws_response_protaut = None
             self.l10n_py_dnit_ws_response_codres = str(response.status_code)
             self.l10n_py_dnit_ws_response_msgres = response.text
-            #return self._aipy_create_notification( _('Error!'), 'danger', str(response.status_code) + " " + response.text)
-            return False
-        else:
-            return self._aipy_json_responseDNIT(response)
+            self.l10n_py_dnit_ws_request_xml = None
+            self.l10n_py_dnit_ws_response_json = None
+            self.l10n_py_dnit_qr = None
+            return str(response.status_code) + "-" + response.text
+
+        self.l10n_py_dnit_ws_response_fecproc = datetime.now()
+        self.l10n_py_dnit_ws_response_cdc = None
+        self.l10n_py_dnit_ws_response_digval = None
+        self.l10n_py_dnit_ws_response_protaut = None
+        self.l10n_py_dnit_ws_response_codres = None
+        self.l10n_py_dnit_ws_response_msgres = None
+        self.l10n_py_dnit_ws_request_xml = None
+        self.l10n_py_dnit_ws_response_json = response.text
+        self.l10n_py_dnit_qr = None
+        return self._aipy_json_responseDNIT( response.text)
+
 
     def _aipy_json_responseDNIT( self, response_data):
         """
         Process the response from the DNIT
         """
-        response = response_data.json()
+        #response = response_data.json()
+        response = response_data
         # {
         #   'dEstRes': E, A, O, R
         #   'dCodRes': 0 o 260 o otro numero
@@ -289,19 +311,21 @@ class AccountMove(models.Model):
             self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
             msg = "Error: " + str(response_value.get('dCodRes')) + " " + str(response_value.get('dMsgRes'))
             self.message_post(body=msg, message_type='notification')
-            return False
+            return response_value
 
-        self.l10n_py_dnit_ws_response_cdc = response_value.get('dEstRes')
+        self.l10n_py_dnit_ws_response_cdc = response_value.get('dId')
         self.l10n_py_dnit_ws_response_fecproc = datetime.strptime(str(response_value.get('dFecProc')), "%Y-%m-%dT%H:%M:%S")  
         self.l10n_py_dnit_ws_response_estres = response_value.get('dEstRes')
         self.l10n_py_dnit_ws_response_codres = response_value.get('dCodRes')
         self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
 
+        self.l10n_py_dnit_qr = response_value.get('qr')
+
         if response_value.get('dEstRes') == None or response_value.get('dEstRes') == 'R':
             msg = "Warning: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
-            return False
+            return response_value
 
         msg = "Success: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
-        return True
+        return False
 
 

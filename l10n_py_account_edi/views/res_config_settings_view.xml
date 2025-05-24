@@ -18,6 +18,20 @@
                 <setting string="Regime Type" company_dependent="1">
                     <field name="l10n_py_regime_type_id" class="o_light_label" />
                 </setting>
+                <setting string="CSC 1 Prod" company_dependent="1">
+                    <field name="l10n_py_dnit_ws_idcsc1_prod" class="o_light_label" />
+                </setting>
+                <setting string="CSC 1 Test" company_dependent="1">
+                    <field name="l10n_py_dnit_ws_idcsc1_test" class="o_light_label" />
+                </setting>
+
+                <setting string="CSC 2 Prod" company_dependent="1">
+                    <field name="l10n_py_dnit_ws_idcsc2_prod" class="o_light_label" />
+                </setting>
+                <setting string="CSC 2 Test" company_dependent="1">
+                    <field name="l10n_py_dnit_ws_idcsc2_test" class="o_light_label" />
+                </setting>
+
             </xpath>
         </field>
     </record>

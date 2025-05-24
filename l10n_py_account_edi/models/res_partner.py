@@ -73,3 +73,46 @@ class ResPartner(models.Model):
         if self.email:
             cliente.update({"email": self.email}) #D215
         return cliente
+
+    def get_l10n_py_dnit_ws_autofactura( self, companyId):
+        autofactura = {}
+
+        autofactura.update({"nombre":self.name if self.name else "Sin Nombre"}) #E307
+        autofactura.update({"direccion":self.street}) #E308
+        autofactura.update({"numeroCasa":self.l10n_py_house if self.l10n_py_house else 1}) #E309
+        pais = self.country_id.l10n_py_alpha_code
+        departamento = self.state_id.code
+        distrito = self.l10n_py_district_id.code
+        ciudad = self.l10n_py_city_id.code
+        departamento_company = companyId.state_id
+        distrito_company = companyId.l10n_py_district_id.code
+        ciudad_company = companyId.l10n_py_city_id.code
+        if pais == 'PRY':
+            autofactura.update({"tipoVendedor": 1}) #E301
+            autofactura.update({"documentoTipo": int(self.l10n_latam_identification_type_id.l10n_py_dnit_code)}) #E304
+            autofactura.update({"documentoNumero": self.vat}) #E306
+
+            if departamento and distrito and ciudad:
+                #autofactura.update({"departamento":departamento}) #E310
+                #autofactura.update({"distrito":distrito}) #E312
+                autofactura.update({"ciudad":ciudad}) #E314
+            else:
+                #autofactura.update({"departamento":departamento_company}) #E310
+                #autofactura.update({"distrito":distrito_company}) #E312
+                autofactura.update({"ciudad":ciudad_company}) #E314
+        else:
+            autofactura.update({"tipoVendedor": 2}) #E301
+            autofactura.update({"documentoTipo": 3}) #E304
+            autofactura.update({"documentoNumero": self.vat}) #E306
+
+            #autofactura.update({"departamento":departamento_company}) #E310
+            #autofactura.update({"distrito":distrito_company}) #E312
+            autofactura.update({"ciudad":ciudad_company}) #E314
+        ubicacion = {}
+        ubicacion.update({"lugar":self.company_id.street}) #E316
+        #ubicacion.update({"departamento":departamento_company}) #E317
+        ubicacion.update({"distrito":distrito_company}) #E319
+        ubicacion.update({"ciudad":ciudad_company}) #E321
+        autofactura.update({"ubicacion":ubicacion})
+
+        return autofactura

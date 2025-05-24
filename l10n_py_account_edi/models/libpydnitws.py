@@ -1,6 +1,14 @@
 #
 
+from odoo.exceptions import ValidationError
+
+import logging
+_logger = logging.getLogger(__name__)
+
+
 from . import libpydate
+import json
+import re
 
 # response_data = libdnitws.get_response_dnit( response_data)
 # self.l10n_py_dnit_ws_response_json = json.dumps(response_data.json(), indent=4)
@@ -19,12 +27,22 @@ def process_response_dnit( response_data):
     Process the response from the DNIT
     """
     return_value = {}
-    response = response_data.json()
+    _logger.error( "TYPE response_data => %s", str(type(response_data)))
+    _logger.error( "TEXT response_data => %s", str((response_data)))
+    #response = response_data.json()
+    response = json.loads(response_data) 
+    _logger.error( "TYPE response => %s", str(type(response)))
 
     if int(response['code']) != 0:
         return_value.update({'dEstRes': 'E'})
         return_value.update({'dCodRes': str(response['code'])})
         return_value.update({'dMsgRes': response.get("message")})
+        payload = response.get("payload")
+        if payload and payload != None:
+            if payload.get('errno') and payload.get('errno') != None:
+                return_value.update({'dCodRes': str(payload['errno'])})
+            if payload.get('errstr') and payload.get('errstr') != None:
+                return_value.update({'dMsgRes': str(payload['errstr'])})
         return return_value
 
     rProtDe = _get_rProtDe( response)
@@ -57,5 +75,3 @@ def _get_rProtDe( response):
     if not rRetEnviDe or rRetEnviDe == None:
         return None
     return rRetEnviDe.get("ns2:rProtDe")
-    
-

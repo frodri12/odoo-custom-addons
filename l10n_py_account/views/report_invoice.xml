@@ -151,21 +151,21 @@
 
         <xpath expr="//td[@name='td_subtotal']" position="replace">
             <t t-set="subtotal_exempt_custom"
-                t-value="subtotal_exempt_custom + line.l10n_py_price_unit_iva0" />
+                t-value="subtotal_exempt_custom + line.l10n_py_base_grav_exe" />
             <t t-set="subtotal_tax5_custom"
-                t-value="subtotal_tax5_custom + line.l10n_py_price_unit_iva5" />
+                t-value="subtotal_tax5_custom + line.l10n_py_base_grav_tax5" />
             <t t-set="subtotal_tax10_custom"
-                t-value="subtotal_tax10_custom + line.l10n_py_price_unit_iva10" />
+                t-value="subtotal_tax10_custom + line.l10n_py_base_grav_tax10" />
             <td name="td_subtotal_exempt_custom" class="text-end o_price_total">
-                <span class="text-nowrap" t-field="line.l10n_py_price_unit_iva0"
+                <span class="text-nowrap" t-field="line.l10n_py_base_grav_exe"
                     t-options='{"widget": "monetary", "display_currency": o.currency_id}'>27.00</span>
             </td>
             <td name="td_subtotal_tax5_custom" class="text-end o_price_total">
-                <span class="text-nowrap" t-field="line.l10n_py_price_unit_iva5"
+                <span class="text-nowrap" t-field="line.l10n_py_base_grav_tax5"
                     t-options='{"widget": "monetary", "display_currency": o.currency_id}'>27.00</span>
             </td>
             <td name="td_subtotal_tax10_custom" class="text-end o_price_total">
-                <span class="text-nowrap" t-field="line.l10n_py_price_unit_iva10"
+                <span class="text-nowrap" t-field="line.l10n_py_base_grav_tax10"
                     t-options='{"widget": "monetary", "display_currency": o.currency_id}'>27.00</span>
             </td>
         </xpath>
