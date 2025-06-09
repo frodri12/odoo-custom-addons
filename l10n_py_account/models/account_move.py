@@ -4,6 +4,11 @@ from odoo.osv import expression
 from odoo.exceptions import UserError, ValidationError, RedirectWarning
 from dateutil.relativedelta import relativedelta
 
+import logging
+from datetime import date
+
+_logger = logging.getLogger(__name__)
+
 class AccountMove(models.Model):
 
     _inherit = 'account.move'
@@ -11,6 +16,12 @@ class AccountMove(models.Model):
     ###
     ### Overwirtes
     ###
+    @api.depends('l10n_latam_available_document_type_ids')
+    def _compute_l10n_latam_document_type(self):
+        for rec in self.filtered(lambda x: x.state == 'draft' and (not x.posted_before if x.move_type in ['out_invoice', 'out_refund'] else True)):
+            document_types = rec.l10n_latam_available_document_type_ids._origin
+            rec.l10n_latam_document_type_id = document_types and document_types[0].id
+
     def _is_manual_document_number(self):
         """ Document number should be manual input by user when the journal use documents and
 
@@ -24,7 +35,7 @@ class AccountMove(models.Model):
             return super()._is_manual_document_number()
 
         if self.l10n_latam_use_documents and self.journal_id.type == 'purchase' and \
-            not self.journal_id.l10n_py_is_pos and self.journal_id.l10n_py_dnit_pos_system in ['AUII_IM', 'AURLI_RLM']:
+            self.journal_id.l10n_py_dnit_pos_system in ['AUII_IM', 'AURLI_RLM']:
             return False
             
         # NOTE: There is a corner case where 2 sales documents can have the same number for the same DOC from a
@@ -94,11 +105,21 @@ class AccountMove(models.Model):
     l10n_py_dnit_concept = fields.Selection(
         compute='_compute_l10n_py_dnit_concept', selection='_get_dnit_invoice_concepts', string="DNIT Concept",
         help="A concept is suggested regarding the type of the products on the invoice.")
+    l10n_py_dnit_pay = fields.Integer(string="Forma de pago",tracking=True,store=True,compute='_compute_forma_pago')
+    l10n_py_dnit_pay_plazo = fields.Char(string="Plazo de pago",tracking=True,store=True,compute='_compute_forma_pago')
+
 
     def _get_dnit_invoice_concepts(self):
         """ Return the list of values of the selection field. """
-        return [('1', 'Products / Definitive export of goods'), ('2', 'Services'), ('3', 'Products and Services'),
-                ('4', '4-Other (export)')]
+        return [
+            ('1','Venta de mercadería'),('2','Prestación de servicios'),
+            ('3','Mixto (Venta de mercadería y servicios)'),('4','Venta de activo fijo'),
+            ('5','Venta de divisas'),('6','Compra de divisas'),
+            ('7','Promoción o entrega de muestras'),('8','Donación'),
+            ('9','Anticipo'),('10','Compra de productos'),
+            ('11','Compra de servicios'),('12','Venta de crédito fiscal'),
+            ('13','Muestras médicas (Art. 3 RG 24/2014)')
+        ]
 
     @api.depends('invoice_line_ids', 'invoice_line_ids.product_id', 'invoice_line_ids.product_id.type', 'journal_id')
     def _compute_l10n_py_dnit_concept(self):
@@ -115,23 +136,18 @@ class AccountMove(models.Model):
         product_types = set([x.product_id.type for x in invoice_lines if x.product_id])
         consumable = {'consu'}
         service = set(['service'])
-        # on expo invoice you can mix services and products
-        expo_invoice = self.l10n_latam_document_type_id.code in ['19', '20', '21']
 
-        # WSFEX 1668 - If Expo invoice and we have a "IVA Liberado – Ley Nº 19.640" (Zona Franca) partner
-        # then DNIT concept to use should be type "Others (4)"
-        #is_zona_franca = self.partner_id.l10n_py_dnit_responsibility_type_id == self.env.ref("l10n_py_account.res_IVA_LIB")
-        is_zona_franca = False
-        # Default value "product"
-        afip_concept = '1'
-        if expo_invoice and is_zona_franca:
-            afip_concept = '4'
-        elif product_types == service:
-            afip_concept = '2'
-        elif product_types - consumable and product_types - service and not expo_invoice:
-            afip_concept = '3'
-        return afip_concept
-
+        dnit_concept = '1'
+        if product_types == service:
+            dnit_concept = '2'
+        elif product_types - consumable and product_types - service:
+            dnit_concept = '3'
+        if self.journal_id.l10n_py_dnit_pos_system in ('AUII_IM','AURLI_RLM'):
+            if dnit_concept == 1:
+                dnit_concept = 10
+            elif dnit_concept == 2:
+                dnit_concept = 11
+        return dnit_concept
 
     def _set_dnit_service_dates(self):
         for rec in self.filtered(lambda m: m.invoice_date and m.l10n_py_dnit_concept in ['2', '3', '4']):
@@ -275,7 +291,17 @@ class AccountMove(models.Model):
                     raise UserError(_('The document number can not be changed for this journal, you can only modify'
                                       ' the POS number if there is not posted (or posted before) invoices'))
 
-
+    @api.depends('invoice_date', 'invoice_date_due')
+    def _compute_forma_pago(self):        
+        for rec in self.filtered(lambda x: x.company_id.account_fiscal_country_id.code == "PY"):
+            rec.l10n_py_dnit_pay = 1
+            rec.l10n_py_dnit_pay_plazo = None
+            if rec.invoice_date_due:
+                diff = rec.invoice_date_due - ( rec.invoice_date or date.today())
+                if diff.days > 2:
+                    rec.l10n_py_dnit_pay = 2
+                    rec.l10n_py_dnit_pay_plazo = str(diff.days) + " días"
+ 
 
     ########################
     @api.model
@@ -309,7 +335,7 @@ class AccountMove(models.Model):
 
     l10n_py_dnit_auth_code = fields.Char("Numero de Timbrado")
     l10n_py_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
-    l10n_py_dnit_auth_enddate = fields.Date("Fecha de FIn del Timbrado")
+    l10n_py_dnit_auth_enddate = fields.Date("Fecha de Fin del Timbrado")
 
     @api.onchange('partner_id')
     def _compute_dnit_auth(self):

@@ -1,6 +1,7 @@
 #
 
 from odoo.addons.account.models.account_move import AccountMove
+from odoo.addons.base.models.res_partner import Partner
 from odoo import _
 from odoo.exceptions import UserError
 
@@ -76,6 +77,16 @@ def get_motivo_nce(ref):
     else:
         ncnd.update({"motivo": '2'}) #E401
     return ncnd
+
+def get_docuemnto_asociado_Autofactura( partnerId:Partner):
+    documento = {}
+    documento.update({"formato":3}) # H002 iTipDocAso
+    documento.update({"constanciaTipo":1})  # H014 iTipCons 1 No contribuyente   2 Microproductores
+    documento.update({"constanciaNumero":partnerId.l10n_py_dnit_self_number}) # H016 dNumCos Numero de constancia
+    documento.update({"constanciaControl":partnerId.l10n_py_dnit_self_control}) # H017 dNumControl
+    if not partnerId.l10n_py_dnit_self_number or not partnerId.l10n_py_dnit_self_control:
+        raise ValueError("No se especifico los datos de la constancia de No contrinuyente")
+    return documento
 
 def get_docuemnto_asociado( moveId:AccountMove):
     _TYPE_DOC = {

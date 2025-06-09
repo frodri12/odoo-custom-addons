@@ -63,7 +63,65 @@
         <!-- -->
         <xpath expr="//div[@id='informations']" position="replace">
             <div id="informations" class="row mb-4">
-                <div class="col-6"></div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">Fecha
+                                de Emisión: </strong>
+                            <strong style="font-size:0.7rem" t-field="o.invoice_date" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">Condición
+                                de Venta: </strong>
+                            <t t-if="o.l10n_py_dnit_pay == '1'">
+                                <strong style="font-size:0.7rem">CONTADO</strong>
+                            </t>
+                            <t t-else="">
+                                <strong style="font-size:0.7rem">CREDITO</strong>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">
+                                Cuotas: </strong>
+                            <strong style="font-size:0.7rem" t-field="o.invoice_date" />
+                        </div>
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">Plazo
+                                del crédito: </strong>
+                            <strong style="font-size:0.7rem" t-field="o.invoice_date" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">
+                                Moneda: </strong>
+                            <strong style="font-size:0.7rem" t-field="o.partner_id.vat" />
+                        </div>
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">Tipo
+                                de Cambio: </strong>
+                            <strong style="font-size:0.7rem" t-field="o.partner_id.vat" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">Tipo
+                                de cambio global o por Item:: </strong>
+                            <strong style="font-size:0.7rem" t-field="o.partner_id.vat" />
+                        </div>
+                    </div>
+                </div>
                 <div class="col-6">
                     <div class="row">
                         <div class="col">
@@ -89,6 +147,33 @@
                                 Address:</strong>
                             <strong style="font-size:0.7rem"
                                 t-field="o.partner_id.contact_address_complete" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">
+                                Teléfono:</strong>
+                            <strong style="font-size:0.7rem"
+                                t-field="o.partner_id.phone" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">
+                                Correo electrónico:</strong>
+                            <strong style="font-size:0.7rem"
+                                t-field="o.partner_id.email" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong
+                                t-att-style="'font-size:0.7rem;color: %s;' % o.company_id.secondary_color">
+                                Tipo de Transacción:</strong>
+                            <strong style="font-size:0.7rem"
+                                t-field="o.l10n_py_dnit_concept" />
                         </div>
                     </div>
                 </div>

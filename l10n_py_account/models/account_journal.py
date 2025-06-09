@@ -6,6 +6,10 @@ from odoo.exceptions import UserError, ValidationError, RedirectWarning
 # Para que no de error el IDE
 from odoo.addons.base.models.res_partner import Partner
 
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class AccountJournal(models.Model):
 
     _inherit = "account.journal"
@@ -102,9 +106,9 @@ class AccountJournal(models.Model):
         # 1:Contribuyente, 4:Exento, 5:Consumidor Final, 7: NN, 8: Prov ext, 9:Cliente Ext
         letters_data = {
             'issued': {
-                '1': ['A', 'B', 'E', 'M'],
+                '1': ['A', 'B', 'E', 'M','C'],
                 '4': ['C'],
-                '5': [],
+                '5': ['C'],
                 '6': ['C', 'E'],
                 '7': ['B', 'C', 'I'],
                 '8': ['B', 'C', 'I'],
@@ -159,14 +163,15 @@ class AccountJournal(models.Model):
             '158', '161', '162', '164', '166', '167', '171', '172', '180', '182', '186', '188', '332']
         auto_factura = ['2000']
         codes = []
-        if (self.type == 'purchase' and dnit_pos_system in ['AUII_IM', 'AURLI_RLM']):
-            codes = auto_factura
-        elif (self.type == 'sale' and not self.l10n_py_is_pos) or (self.type == 'purchase' and dnit_pos_system in ['II_IM', 'RLI_RLM']):
+        #if (self.type == 'purchase' and dnit_pos_system in ['AUII_IM', 'AURLI_RLM']):
+        #    codes = auto_factura
+        if (self.type == 'sale' and not self.l10n_py_is_pos) or (self.type == 'purchase' and dnit_pos_system in ['II_IM', 'RLI_RLM']):
             codes = codes_issuer_is_supplier
         elif self.type == 'purchase' and dnit_pos_system == 'RAW_MAW':
             # electronic invoices (wsfev1) (intersection between available docs on ws and codes_issuer_is_supplier)
             codes = ['60', '61']
         elif self.type == 'purchase':
+            _logger.error( 'Paso por aca al elegir autofactura')
             return [('code', 'not in', codes_issuer_is_supplier)]
         elif dnit_pos_system == 'II_IM':
             # pre-printed invoice

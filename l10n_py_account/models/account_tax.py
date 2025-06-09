@@ -15,5 +15,7 @@ class AccountTax(models.Model):
         ('3', 'Renta'),
         ('4', 'Ninguno'),
         ('5', 'IVA - Renta'),
+        ('P', 'Percepcion'),
+        ('R', 'Retencion')
     ], string='Tipo de impuesto', default='1',
        help='Tipo de impuesto para el cálculo del mismo')

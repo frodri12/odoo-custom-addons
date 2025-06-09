@@ -9,6 +9,7 @@ import os.path
 from os import path
 import requests
 
+from . import libpyedi
 from . import libpydate
 from . import libpyrandom
 from . import libpyaccount
@@ -23,9 +24,6 @@ _data = {}
 class AccountMove(models.Model):
 
     _inherit = "account.move"
-
-    l10n_py_dnit_cdc = fields.Char('Authorization Code', copy=False, size=44, 
-         help="Paraguay: authorization code given by DNIT after electronic invoice is created and valid.")
 
     l10n_py_dnit_ws_response_cdc = fields.Char(string="CDC", readonly=True, tracking=True, copy=False)
     l10n_py_dnit_ws_response_fecproc = fields.Char(string="Fecha de procesado", readonly=True, tracking=True, copy=False)
@@ -97,12 +95,14 @@ class AccountMove(models.Model):
         elif self.move_type == 'out_refund':
             _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
             _data.update({ "documentoAsociado" : libpyaccount.get_docuemnto_asociado(self.reversed_entry_id)}) #H001
+            _data.update({ "condicion" : libpyaccount.get_condicion_operacion(self.invoice_date, self.invoice_date_due, self.amount_total)}) 
         ## Queda pendiente de analisis
         #elif self.move_type == 'out_receipt':
             ## Recibos a clientes
         elif self.move_type == 'in_invoice':
             ## Solo para autofactura
             _data.update({ "autoFactura" : self.partner_id.get_l10n_py_dnit_ws_autofactura(self.company_id)})
+            _data.update({ "documentoAsociado" : libpyaccount.get_docuemnto_asociado_Autofactura(self.partner_id)}) #H001
         elif self.move_type == 'in_refund':
             _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
         else:
@@ -254,7 +254,8 @@ class AccountMove(models.Model):
         If there are errors it means that the invoice has been Rejected by DNIT and we raise an user error with the
         processed info about the error and some hint about how to solve it. The invoice is not valided.
         """
-        all_data = self._prepare_l10n_py_ws_data()
+        ##all_data = self._prepare_l10n_py_ws_data()
+        all_data = libpyedi.get_xmlgen_DE(self)
         self.l10n_py_dnit_ws_request_json = all_data
         response = requests.post(
             self._get_l10n_py_dnit_ws_url("recibe"),  json=json.loads(json.dumps(all_data)), allow_redirects=False)

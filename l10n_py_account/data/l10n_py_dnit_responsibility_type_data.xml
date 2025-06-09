@@ -30,7 +30,7 @@
     </record>
     <record model='l10n_py.dnit.responsibility.type' id='res_NOCATEG'>
         <field name='code'>7</field>
-        <field name='name'>Sujeto no Categorizado</field>
+        <field name='name'>No contribuyente</field>
         <field name='active' eval="True" />
     </record>
     <record model='l10n_py.dnit.responsibility.type' id='res_EXT_Prov'>

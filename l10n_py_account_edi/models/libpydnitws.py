@@ -50,7 +50,10 @@ def process_response_dnit( response_data):
         return return_value
     return_value.update({'dId': rProtDe.get("ns2:Id")})
     return_value.update({'dFecProc': libpydate.from_date2utc(rProtDe.get("ns2:dFecProc"))})
-    return_value.update({'dEstRes': rProtDe.get("ns2:dEstRes")[:1]})
+    if rProtDe.get("ns2:dEstRes") == None:
+        return_value.update({'dEstRes': "E"})
+    else:
+        return_value.update({'dEstRes': rProtDe.get("ns2:dEstRes")[:1]})
     return_value.update({'dEstResDet': rProtDe.get("ns2:dEstRes")})
     return_value.update({'dProtAut': rProtDe.get("ns2:dProtAut")})
 

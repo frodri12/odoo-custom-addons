@@ -8,6 +8,7 @@ from . import libpydnitws
 from . import libpyrandom
 from . import libpystring
 from . import libpyaccount
+from . import libpyedi
 
 from . import res_company
 from . import res_config_settings
