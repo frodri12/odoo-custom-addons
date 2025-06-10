@@ -329,4 +329,12 @@ class AccountMove(models.Model):
         msg = "Success: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
         return False
 
+    @api.depends('l10n_py_dnit_ws_response_estres')
+    def _compute_show_reset_to_draft_button(self):
+        """
+            EXTENDS 'account.move'
+            When the DNIT approved the move, don't show the reset to draft button
+        """
+        super()._compute_show_reset_to_draft_button()
+        self.filtered(lambda move: move.l10n_py_dnit_ws_response_estres == "A" or move.l10n_py_dnit_ws_response_estres == "O").show_reset_to_draft_button = False
 
