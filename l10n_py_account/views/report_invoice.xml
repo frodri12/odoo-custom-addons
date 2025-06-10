@@ -63,7 +63,7 @@
         <!-- -->
         <xpath expr="//div[@id='informations']" position="replace">
             <div id="informations" class="row mb-4">
-                <div class="col-6">
+                <div class="col-6" style="padding-left:1rem;">
                     <div class="row">
                         <div class="col">
                             <strong
@@ -369,8 +369,10 @@
                     <strong>TOTAL OPERATION:</strong>
                 </td>
                 <td class="text-end o_price_total" colspan="2">
-                    <strong t-out="tax_totals['total_amount_currency']"
-                        t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                    <h4>
+                        <strong t-out="tax_totals['total_amount_currency']"
+                            t-options='{"widget": "monetary", "display_currency": o.currency_id}' />
+                    </h4>
                 </td>
             </tr>
 
@@ -461,6 +463,11 @@
                         <strong>
                             <span t-out="report_name" />
                         </strong>
+                        <t
+                            t-if="o.journal_id.l10n_py_dnit_pos_system == 'RLI_RLM' or o.journal_id.l10n_py_dnit_pos_system =='AURLI_RLM'">
+                            <strong> ELECTRONICA</strong>
+                        </t>
+
                     </h4>
                 </div>
             </div>
@@ -504,19 +511,27 @@
                     <!-- (10) CUIT -->
                     <br />
                     <!-- <span t-field="o.company_id.l10n_ar_afip_responsibility_type_id" /> -->
-                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> - RUC: </span>
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color">RUC: </span>
                     <span t-field="o.company_id.partner_id.vat" />
 
                     <!-- (11) IIBB: -->
                     <!-- (12) Inicio de actividades -->
                     <br />
-                    <span t-att-style="'color: %s;' % o.company_id.secondary_color">IIBB: </span>
-                    <!-- <span t-out="o.company_id.l10n_ar_gross_income_type == 'exempt' and
-                    'Exento' or o.company_id.l10n_ar_gross_income_number" /> -->
-                    <span t-att-style="'color: %s;' % o.company_id.secondary_color"> - Activities
-                        Start: </span>
-                    <!-- <span t-field="o.company_id.l10n_ar_afip_start_date" /> -->
-
+                    <span t-att-style="'color: %s;' % o.company_id.secondary_color">Timbrado: </span>
+                    <t t-if="o.company_id.l10n_py_dnit_ws_environment == 'testing'">
+                        <span t-field="o.journal_id.l10n_py_dnit_timbrado_test" />
+                        <br />
+                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Activities
+                            Start: </span>
+                        <span t-field="o.journal_id.l10n_py_dnit_timbrado_start_date_test" />
+                    </t>
+                    <t t-else="o.company_id.l10n_py_dnit_ws_environment == 'testing'">
+                        <span t-field="o.journal_id.l10n_py_dnit_timbrado" />
+                        <br />
+                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Activities
+                            Start: </span>
+                        <span t-field="o.journal_id.l10n_py_dnit_timbrado_start_date" />
+                    </t>
                 </div>
             </div>
         </div>

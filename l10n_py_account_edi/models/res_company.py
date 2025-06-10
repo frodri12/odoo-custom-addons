@@ -8,16 +8,6 @@ class ResCompany(models.Model):
 
     _inherit = "res.company"
 
-    l10n_py_dnit_ws_idcsc1_prod = fields.Char( string='IDCSC1 Prod' )
-    l10n_py_dnit_ws_idcsc2_prod = fields.Char( string='IDCSC2 Prod' )
-    l10n_py_dnit_ws_idcsc1_test = fields.Char( string='IDCSC1 Test',default = "ABCD0000000000000000000000000000" )
-    l10n_py_dnit_ws_idcsc2_test = fields.Char( string='IDCSC2 Test',default = "EFGH0000000000000000000000000000" )
- 
-
-    l10n_py_dnit_ws_environment = fields.Selection([('testing', 'Testing'), ('production', 'Production')], 
-        string="DNIT Environment", default='testing',
-        help="Environment used to connect to DNIT webservices. Production is to create real fiscal invoices in DNIT,"
-        " Testing is for testing invoice creation in DNIT.")
 
     def _get_environment_type(self):
         """ This method is used to return the environment type of the company (testing or production) and will raise an

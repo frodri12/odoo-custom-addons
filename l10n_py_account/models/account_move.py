@@ -337,11 +337,17 @@ class AccountMove(models.Model):
     l10n_py_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
     l10n_py_dnit_auth_enddate = fields.Date("Fecha de Fin del Timbrado")
 
-    @api.onchange('partner_id')
+    @api.onchange('partner_id','journal_id')
     def _compute_dnit_auth(self):
-        self.l10n_py_dnit_auth_code = self.partner_id.l10n_py_dnit_auth_code
-        self.l10n_py_dnit_auth_startdate = self.partner_id.l10n_py_dnit_auth_startdate
-        self.l10n_py_dnit_auth_enddate = self.partner_id.l10n_py_dnit_auth_enddate
+        if self.move_type == 'in_invoice' and self.journal_id.l10n_py_dnit_pos_system not in ('AURLI_RLM','AUII_IM'):
+            self.l10n_py_dnit_auth_code = self.partner_id.l10n_py_dnit_auth_code
+            self.l10n_py_dnit_auth_startdate = self.partner_id.l10n_py_dnit_auth_startdate
+            self.l10n_py_dnit_auth_enddate = self.partner_id.l10n_py_dnit_auth_enddate
+        else:
+            self.l10n_py_dnit_auth_code = self.journal_id.l10n_py_dnit_timbrado_test if self.company_id.l10n_py_dnit_ws_environment == 'testing' else self.journal_id.l10n_py_dnit_timbrado
+            self.l10n_py_dnit_auth_startdate = self.journal_id.l10n_py_dnit_timbrado_start_date_test if self.company_id.l10n_py_dnit_ws_environment == 'testing' else self.journal_id.l10n_py_dnit_timbrado_start_date
+            self.l10n_py_dnit_auth_enddate = self.journal_id.l10n_py_dnit_timbrado_end_date_test if self.company_id.l10n_py_dnit_ws_environment == 'testing' else self.journal_id.l10n_py_dnit_timbrado_end_date
+
 
     l10n_py_dnit_qr = fields.Char("QR Code")
     
