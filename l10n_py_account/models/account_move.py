@@ -351,3 +351,12 @@ class AccountMove(models.Model):
 
     l10n_py_dnit_qr = fields.Char("QR Code")
     
+    def display_report_name(self):
+        #l10n_latam_document_type_id.report_name
+        if self.journal_id.l10n_py_dnit_pos_system in ('RLI_RLM','AURLI_RLM'):
+            if self.l10n_latam_document_type_id.report_name in ('INVOICE','DEBIT NOTE','CREDIT NOTE','SELF INVOICE') :
+                return 'ELECTRONIC ' + self.l10n_latam_document_type_id.report_name
+            elif self.l10n_latam_document_type_id.report_name in ('FACTURA','NOTA DE DEBITO','NOTA DE CREDITO','AUTOFACTURA'):
+                return self.l10n_latam_document_type_id.report_name + ' ELECTRONICA'
+        return self.l10n_latam_document_type_id.report_name
+        
