@@ -323,7 +323,7 @@ class AccountMove(models.Model):
         """ Compute the inverse currency rate for the move """
         for move in self:
             if move.is_invoice( include_receipts=True):
-                move.l10n_aipy_inverse_currency_rate = 1 / self.env['res.currency']._get_conversion_rate(
+                move.l10n_py_inverse_currency_rate = 1 / self.env['res.currency']._get_conversion_rate(
                     from_currency=move.company_currency_id,
                     to_currency=move.currency_id,
                     company=move.company_id,
