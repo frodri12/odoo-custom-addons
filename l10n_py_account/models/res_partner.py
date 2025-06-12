@@ -8,9 +8,9 @@ import logging
 _logger = logging.getLogger(__name__)
 
 ADDRESS_FIELDS = (
-    'street', 'l10n_aipy_house', 'street2', 
-    'zip', 'city', 'state_id', 'l10n_aipy_district_id', 
-    'l10n_aipy_city_id', 'country_id')
+    'street', 'l10n_py_house', 'street2', 
+    'zip', 'city', 'state_id', 'l10n_py_district_id', 
+    'l10n_py_city_id', 'country_id')
 
 class ResPartner(models.Model):
 

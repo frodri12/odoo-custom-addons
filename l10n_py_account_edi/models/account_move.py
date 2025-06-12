@@ -284,10 +284,10 @@ class AccountMove(models.Model):
         self.l10n_py_dnit_ws_request_xml = None
         self.l10n_py_dnit_ws_response_json = response.text
         self.l10n_py_dnit_qr = None
-        return self._aipy_json_responseDNIT( response.text)
+        return self._py_json_responseDNIT( response.text)
 
 
-    def _aipy_json_responseDNIT( self, response_data):
+    def _py_json_responseDNIT( self, response_data):
         """
         Process the response from the DNIT
         """

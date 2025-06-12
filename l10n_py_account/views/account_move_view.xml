@@ -12,7 +12,7 @@
                     <span>1 </span>
                     <field name="currency_id" readonly="1" options="{'no_open': True}" />
                     <span> = </span>
-                    <field name="l10n_aipy_inverse_currency_rate" digits="[12,2]" readonly="1" />
+                    <field name="l10n_py_inverse_currency_rate" digits="[12,2]" readonly="1" />
                     <span> </span>
                     <field name="company_currency_id" readonly="1" options="{'no_open': True}" />
                 </div>

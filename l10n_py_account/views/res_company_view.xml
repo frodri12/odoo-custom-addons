@@ -56,7 +56,7 @@
             <!-- TABS -->
             <xpath expr="//page[1]" position="after">
                 <page string="Economic Activity" invisible="country_code != 'PY'">
-                    <field name="l10n_aipy_economic_activity_ids" />
+                    <field name="l10n_py_economic_activity_ids" />
                 </page>
             </xpath>
         </field>

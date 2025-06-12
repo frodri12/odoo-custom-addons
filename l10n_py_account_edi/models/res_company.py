@@ -49,7 +49,7 @@ class ResCompany(models.Model):
     def _get_l10n_py_dnit_ws_economic_activities( self):
         ecos = []
         ecos_count = 0
-        for rec in self.l10n_aipy_economic_activity_ids:
+        for rec in self.l10n_py_economic_activity_ids:
             ecos.append(rec._get_l10n_py_dnit_ws_economic_avtivity())
             ecos_count += 1
         if ecos_count == 0:

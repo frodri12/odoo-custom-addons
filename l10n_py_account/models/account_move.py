@@ -315,7 +315,7 @@ class AccountMove(models.Model):
 
     ########################
 
-    l10n_aipy_inverse_currency_rate = fields.Float(string='Inverse Currency Rate', readonly=True, store=True,
+    l10n_py_inverse_currency_rate = fields.Float(string='Inverse Currency Rate', readonly=True, store=True,
          compute="_compute_inverse_currency_rate", precompute=True, copy=False)
 
     @api.depends('currency_id','company_currency_id','company_id','invoice_date')

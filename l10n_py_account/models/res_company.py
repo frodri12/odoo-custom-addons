@@ -84,7 +84,7 @@ class ResCompany(models.Model):
     l10n_py_establecimiento = fields.Integer( string="Establishment", default=1)
     
     ########################
-    l10n_aipy_economic_activity_ids = fields.One2many(
+    l10n_py_economic_activity_ids = fields.One2many(
         'l10n_py.economic.activity', 'company_id',
         string='Economic Activities',
         help='Economic activities associated with the country'

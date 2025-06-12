@@ -185,7 +185,7 @@ def _get_gEmis(companyId:Company):
 # D2.1 Campos que describen la actividad economica del emisor (D130-D139)
 def _get_gActEco(companyId:Company):
     gActEco = []
-    for rec in companyId.l10n_aipy_economic_activity_ids:
+    for rec in companyId.l10n_py_economic_activity_ids:
         vector = {}
         vector.update({"cActEco":rec.code})
         vector.update({"cDesActEco":rec.name})
