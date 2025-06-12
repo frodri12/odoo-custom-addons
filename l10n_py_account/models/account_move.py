@@ -330,7 +330,7 @@ class AccountMove(models.Model):
                     date=move._get_invoice_currency_rate_date(),
                 )
             else:
-                move.l10n_aipy_inverse_currency_rate = 1
+                move.l10n_py_inverse_currency_rate = 1
 
 
     l10n_py_dnit_auth_code = fields.Char("Numero de Timbrado")
