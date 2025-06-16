@@ -10,9 +10,6 @@ from os import path
 import requests
 
 from . import libpyedi
-from . import libpydate
-from . import libpyrandom
-from . import libpyaccount
 from . import libpydnitws
 
 
@@ -51,130 +48,6 @@ class AccountMove(models.Model):
         sRet = str(ICP.get_param(sKey))
         return sRet
 
-
-    # Prepare Request Data for webservices. Generate the JSON file for the DNIT
-    def _prepare_l10n_py_ws_data( self):
-        _params = {}
-        _data = {}
-        # Set Params
-        _params.update({ "version" : 150 }) #AA002
-        _params.update({ "ruc" : self.company_id.vat }) #D101
-        _params.update({ "tipoContribuyente" : 2 if self.company_id.partner_id.is_company else 1 }) #D103
-        _params.update({ "razonSocial" : self.company_id.name }) #D105
-        if self.company_id.l10n_py_dnit_ws_environment == 'testing':
-            _params.update({ "nombreFantasia" : self.company_id.name }) #D106
-            _params.update({ "razonSocial" : "DE generado en ambiente de prueba - sin valor comercial ni fiscal" }) #D105
-        _params.update({ "establecimientos" : self.company_id._get_l10n_py_dnit_ws_establecimiento() }) #AA002
-        _params.update({ "actividadesEconomicas" : self.company_id._get_l10n_py_dnit_ws_economic_activities() }) #AA002
-
-        timbrado = self.journal_id._get_l10n_py_dnit_ws_timbrado(self.company_id)
-        _params.update({ "timbradoNumero" : timbrado.get('timbradoNumero') }) #C004
-        _params.update({ "timbradoFecha" : timbrado.get('timbradoFecha') }) #C008
-        if timbrado.get('numeroSerie') != None:
-            _params.update({ "numeroSerie" : timbrado.get('numeroSerie') }) #C010
-        if self.company_id.l10n_py_regime_type_id:
-            value = self.company_id.l10n_py_regime_type_id.code
-            if value and value > 0:
-                _params.update({ "tipoRegimen" : value }) 
-
-        _data.update({ "fecha" : libpydate.from_date2tz(self, datetime.now()).strftime("%Y-%m-%dT%H:%M:%S") }) #A004
-        _data.update({ "codigoSeguridadAleatorio" : libpyrandom.generate_random_code(self)}) #B004
-        _data.update({ "tipoEmision" : 1}) #B002
-        _data.update({ "tipoDocumento" : libpyaccount.get_tipoDocumento(self.move_type)}) #C002
-        _data.update({ "establecimiento" : self.l10n_latam_document_number.split("-")[0]}) 
-        _data.update({ "punto" : self.l10n_latam_document_number.split("-")[1]}) #C006
-        _data.update({ "numero" : self.l10n_latam_document_number.split("-")[2]}) #C010
-        _data.update({ "moneda" : self.currency_id.name}) #D015
-        if self.currency_id.name != 'PYG':
-            _data.update({ "cambio" : 1 / self.invoice_currency_rate}) #D018
-            _data.update({ "condicionTipoCambio" : 1}) #D017
-        _data.update({ "cliente" : self.partner_id._get_l10n_py_dnit_ws_cliente()}) 
-        if self.move_type == 'out_invoice':
-            _data.update({ "factura" : libpyaccount.get_factura()}) #E010
-            _data.update({ "condicion" : libpyaccount.get_condicion_operacion(self.invoice_date, self.invoice_date_due, self.amount_total)}) 
-        elif self.move_type == 'out_refund':
-            _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
-            _data.update({ "documentoAsociado" : libpyaccount.get_docuemnto_asociado(self.reversed_entry_id)}) #H001
-            _data.update({ "condicion" : libpyaccount.get_condicion_operacion(self.invoice_date, self.invoice_date_due, self.amount_total)}) 
-        ## Queda pendiente de analisis
-        #elif self.move_type == 'out_receipt':
-            ## Recibos a clientes
-        elif self.move_type == 'in_invoice':
-            ## Solo para autofactura
-            _data.update({ "autoFactura" : self.partner_id.get_l10n_py_dnit_ws_autofactura(self.company_id)})
-            _data.update({ "documentoAsociado" : libpyaccount.get_docuemnto_asociado_Autofactura(self.partner_id)}) #H001
-        elif self.move_type == 'in_refund':
-            _data.update({ "notaCreditoDebito" : libpyaccount.get_motivo_nce(self.ref)}) 
-        else:
-            raise UserError(_("Document type is invalid (%s)" % self.move_type))
-        ## Items
-        items = []
-        isService = False
-        isProduct = False
-        globalTaxTye = "0"
-        for rec in self.invoice_line_ids:
-            if rec.display_type == "product":
-                items.append(rec._get_l10n_py_dnit_ws_item())
-                if rec.product_id.type == 'combo':
-                    isProduct = True
-                if rec.product_id.type == 'service':  # consu, service, combo
-                    isService = True
-                if rec.product_id.type == 'consu':
-                    isProduct = True
-                taxType = rec.tax_ids.l10n_py_tax_type
-                if globalTaxTye == "0":
-                    globalTaxTye = taxType
-                elif globalTaxTye == "5":
-                    if taxType == "2":
-                        globalTaxTye = "2"
-                    elif globalTaxTye == "4":
-                        globalTaxTye = taxType
-                elif globalTaxTye == "3":
-                    if taxType == "1" or taxType == "5":
-                        globalTaxTye = "5"
-                    elif taxType == "2":
-                        globalTaxTye = "2"
-                elif globalTaxTye == "1":
-                    if taxType == "3" or taxType == "5":
-                        globalTaxTye = "5"
-                    elif taxType == "2":
-                        globalTaxTye = "2"
-        _data.update({ "items" : items})
-        tipoTransaccion = 0
-        if isService and isProduct:
-            tipoTransaccion = 3
-        elif isService:
-            tipoTransaccion = 2
-        else:
-            tipoTransaccion = 1
-        if self.move_type == 'out_invoice' and tipoTransaccion != 0:
-            _data.update({ "tipoTransaccion" : tipoTransaccion}) #D011
-        _data.update({ "tipoImpuesto" : globalTaxTye})
-        all = {}
-        all.update({"empresa": self.company_id.vat.split("-")[0]})
-        all.update({"servicio": "de"})
-        all.update({"idCSC1": self.company_id.l10n_py_dnit_ws_idcsc1_test if self.company_id.l10n_py_dnit_ws_environment == 'testing' else self.company_id.l10n_py_dnit_ws_idcsc1_prod})
-        all.update({"idCSC2": self.company_id.l10n_py_dnit_ws_idcsc2_test if self.company_id.l10n_py_dnit_ws_environment == 'testing' else self.company_id.l10n_py_dnit_ws_idcsc2_prod})
-        all.update({"produccion": False if self.company_id.l10n_py_dnit_ws_environment == "testing" else True})
-        all.update({"params": _params})
-        all.update({"data": _data})
-        options = {}
-        if self.currency_id.name == 'PYG':
-            options.update({"partialTaxDecimals": 0})
-        elif self.currency_id.name == 'USD':
-            options.update({"partialTaxDecimals": 2})
-        all.update({"options": options})
-        #_logger.error("All JSON Data: \n%s\n", json.dumps(all, indent=4))
-        path_vscode_logs = "/opt/Odoo/odoo-18.0.developer/odoo-custom-addons/.vscode/TestLibXML/data"
-        if path.exists(path_vscode_logs):
-            with open(path_vscode_logs + '/params.json', 'w') as f:
-                json.dump(_params, f, indent=4)
-            with open(path_vscode_logs + '/data.json', 'w') as f:
-                json.dump(_data, f, indent=4)
-            with open(path_vscode_logs + '/options.json', 'w') as f:
-                json.dump(options, f, indent=4)
-        return all
-
     # Buttons
     def _post(self, soft=True):
         py_invoices = self.filtered(lambda x: x.is_invoice() and x.country_code == "PY")
@@ -190,7 +63,6 @@ class AccountMove(models.Model):
 
             validated += super(AccountMove, inv)._post(soft=soft)
 
-            _logger.error("Procesando - Partner: %s Documento: %s", inv.partner_id.name, inv.l10n_latam_document_number)
             ### La llamada a la SET
             #return_info = inv._l10n_ar_do_afip_ws_request_cae(client, auth, transport)
             return_info = inv._l10n_py_do_dnit_ws_request()

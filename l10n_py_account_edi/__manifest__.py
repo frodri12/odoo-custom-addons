@@ -15,6 +15,7 @@
         # 'security/ir.model.access.csv',
         'data/ir_config_parameter_data.xml',
         'views/res_config_settings_view.xml',
+        'views/account_move_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
