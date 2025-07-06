@@ -174,7 +174,7 @@ class AccountMove(models.Model):
         #   'dEstResDet':  Aprobado, Aprobado con observaciones, Rechazado
         #   'dProtAut': Codigo que no se para que sirve
         # }
-        self.l10n_py_dnit_ws_response_json = json.dumps(response, indent=4)
+        #self.l10n_py_dnit_ws_response_json = json.dumps(response, indent=4)
         self.l10n_py_dnit_ws_response_fecproc = datetime.now()
 
         response_value = libpydnitws.process_response_dnit( response)
@@ -191,6 +191,7 @@ class AccountMove(models.Model):
         self.l10n_py_dnit_ws_response_estres = response_value.get('dEstRes')
         self.l10n_py_dnit_ws_response_codres = response_value.get('dCodRes')
         self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
+        self.l10n_py_dnit_ws_response_protaut = response_value.get('dProtAut')
 
         self.l10n_py_dnit_qr = response_value.get('qr')
 

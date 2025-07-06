@@ -1,6 +1,7 @@
 #
 
 from odoo.exceptions import ValidationError
+from datetime import datetime
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -49,7 +50,9 @@ def process_response_dnit( response_data):
     if rProtDe == None:
         return return_value
     return_value.update({'dId': rProtDe.get("ns2:Id")})
-    return_value.update({'dFecProc': libpydate.from_date2utc(rProtDe.get("ns2:dFecProc"))})
+    #return_value.update({'dFecProc': libpydate.from_date2utc(rProtDe.get("ns2:dFecProc"))})
+    #return_value.update({'dFecProc': datetime.strptime((rProtDe.get("ns2:dFecProc")[0:10] + " " + rProtDe.get("ns2:dFecProc")[11:19]), "%Y-%m-%d %H:%M:%S")})
+    return_value.update({'dFecProc': rProtDe.get("ns2:dFecProc")[0:19]})
     if rProtDe.get("ns2:dEstRes") == None:
         return_value.update({'dEstRes': "E"})
     else:

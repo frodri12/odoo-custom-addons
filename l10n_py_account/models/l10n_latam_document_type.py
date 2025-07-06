@@ -9,15 +9,9 @@ class L10nLatamDocumentType(models.Model):
 
     l10n_py_letter = fields.Selection(
         selection='_get_l10n_py_letters',
-        string='Letters',
-        help='Letters defined by the DNIT that can be used to identify the'
-        ' documents presented to the government and that depends on the'
-        ' operation type, the responsibility of both the issuer and the'
-        ' receptor of the document')
+        string='Letters')
     purchase_aliquots = fields.Selection(
-        [('not_zero', 'Not Zero'), ('zero', 'Zero')], help='Raise an error if a vendor bill is miss encoded. "Not Zero"'
-        ' means the VAT taxes are required for the invoices related to this document type, and those with "Zero" means'
-        ' that only "VAT Not Applicable" tax is allowed.')
+        [('not_zero', 'Not Zero'), ('zero', 'Zero')])
 
     def _get_l10n_py_letters(self):
         """ Return the list of values of the selection field. """
@@ -77,7 +71,7 @@ class L10nLatamDocumentType(models.Model):
         if failed:
             raise UserError(
                 _(
-                    "%(value)s is not a valid value for %(field)s.\nThe document number must be entered with a dash (-) and a maximum of 3 characters for the first part, 3 characters for the second part and 7 for the third. The following are examples of valid numbers:\n* 1-1-1\n* 001-001-0000001",
+                    "%(valor)s no es un valor válido para %(campo)s..\nEl número de documento debe introducirse con un guiones (-).\nUn máximo de 3 caracteres para la primera parte, 3 caracteres para la segunda parte y 7 para la tercera.\nLos siguientes son ejemplos de números válidos:\n* 1-1-1\n* 001-001-0000001",
                     value=document_number,
                     field=self.name,
                 ),

@@ -7,8 +7,7 @@ class AccountFiscalPosition(models.Model):
 
     l10n_ar_afip_responsibility_type_ids = fields.Many2many(
         'l10n_py.dnit.responsibility.type', 'l10n_py_dnit_reponsibility_type_fiscal_pos_rel',
-        string='DNIT Responsibility Types', help='List of DNIT responsibilities where this fiscal position '
-        'should be auto-detected')
+        string='Tipos de responsabilidad')
 
     def _get_fpos_ranking_functions(self, partner):
         if self.env.company.country_id.code != "PY":

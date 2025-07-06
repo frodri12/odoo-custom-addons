@@ -7,7 +7,7 @@ class ResCountry(models.Model):
     _inherit = 'res.country'
 
     l10n_py_alpha_code = fields.Char(
-        'Alpha3 Code', size=3, help='This code will be used on electronic invoice')
+        'Alpha3 Code', size=3, help='Este código se utilizará en la factura electrónica.')
     l10n_py_alpha_number = fields.Char(
         'ISO Number'
     )

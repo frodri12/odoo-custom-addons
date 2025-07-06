@@ -21,18 +21,18 @@ class AccountJournal(models.Model):
     )
 
     l10n_py_dnit_pos_number = fields.Integer(
-        'DNIT POS Number', help='This is the point of sale/expedition number assigned by DNIT in order to generate invoices')
+        'Punto de expedición', help='Este es el número de punto de expedición asignado por la DNIT para generar facturas')
 
     l10n_py_is_pos = fields.Boolean(
         compute="_compute_l10n_py_is_pos", store=True, readonly=False,
-        string="Is DNIT POS?",
-        help="Paraguay: Specify if this Journal will be used to send electronic invoices to DNIT.",
+        string="¿Con conecxión a la DNIT?",
+        help="Especificar si este Diario será utilizado para enviar facturas electrónicas a la DNIT",
     )
 
     company_partner = fields.Many2one('res.partner', related='company_id.partner_id')
 
     l10n_py_dnit_pos_partner_id = fields.Many2one(
-        'res.partner', 'DNIT POS Address', help='This is the address used for invoice reports of this POS',
+        'res.partner', 'DNIT POS Address', help='Esta es la dirección utilizada para las facturas',
         domain="['|', ('id', '=', company_partner), '&', ('id', 'child_of', company_partner), ('type', '!=', 'contact')]"
     )
 
@@ -44,14 +44,14 @@ class AccountJournal(models.Model):
     def _get_l10n_py_dnit_pos_types_selection(self):
         """ Return the list of values of the selection field. """
         return [
-            ('II_IM', _('Pre-printed Invoice')),
-            ('RLI_RLM', _('Online Invoice')),
-            ('AUII_IM', _('Pre-printed Self Invoice')),
-            ('AURLI_RLM', _('Online Self Invoice')),
-            ('BFERCEL', _('Electronic Fiscal Bond - Online Invoice')),
-            ('FEERCELP', _('Export Voucher - Billing Plus')),
-            ('FEERCEL', _('Export Voucher - Online Invoice')),
-            ('CPERCEL', _('Product Coding - Online Voucher')),
+            ('II_IM', _('Factura preimpresa')),
+            ('RLI_RLM', _('Factura en línea')),
+            ('AUII_IM', _('Autofactura preimpresa')),
+            ('AURLI_RLM', _('Autofactura en línea')),
+            ('BFERCEL', _('Bono Fiscal Electrónico - Factura en Línea')),
+            ('FEERCELP', _('Comprobante de exportación - Billing Plus')),
+            ('FEERCEL', _('Comprobante de Exportación - Factura en Línea')),
+            ('CPERCEL', _('Codificación de productos - Cupón en línea')),
         ]
 
     @api.depends('l10n_py_is_pos')

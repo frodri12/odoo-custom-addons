@@ -9,12 +9,6 @@ class AccountChartTemplate(models.AbstractModel):
     _inherit = 'account.chart.template'
 
     def _load(self, template_code, company, install_demo,force_create=True):
-        """ Set companies DNIT Responsibility and Country if PY CoA is installed, also set tax calculation rounding
-        method required in order to properly validate match DNIT invoices.
-
-        Also, raise a warning if the user is trying to install a CoA that does not match with the defined DNIT
-        Responsibility defined in the company
-        """
         coa_responsibility = self._get_py_responsibility_match(template_code)
         if coa_responsibility:
             company.write({
@@ -38,8 +32,6 @@ class AccountChartTemplate(models.AbstractModel):
 
     @api.model
     def _get_py_responsibility_match(self, chart_template):
-        """ return responsibility type that match with the given chart_template code
-        """
         match = {
             'py_base': self.env.ref('l10n_py_account.res_IVARI'),
         }

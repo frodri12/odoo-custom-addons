@@ -14,7 +14,7 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     ###
-    ### Overwirtes
+    ### Overwrites
     ###
     @api.depends('l10n_latam_available_document_type_ids')
     def _compute_l10n_latam_document_type(self):
@@ -23,14 +23,16 @@ class AccountMove(models.Model):
             rec.l10n_latam_document_type_id = document_types and document_types[0].id
 
     def _is_manual_document_number(self):
-        """ Document number should be manual input by user when the journal use documents and
+        """ El número de documento debe ser ingresado manualmente por el usuario cuando:
 
-        * if sales journal and not a DNIT pos (liquido producto case)
-        * if purchase journal and not a DNIT pos (regular case of vendor bills)
+        * Si se trata de un diario de ventas
+        * Si se trata de un diario de compras
 
-        All the other cases the number should be automatic set, wiht only one exception, for pre-printed/online DNIT
-        POS type, the first numeber will be always set manually by the user and then will be computed automatically
-        from there """
+        En todos los demás casos, el número debe configurarse automáticamente, 
+        con la única excepción de que para el tipo preimpreso/en línea, 
+        el usuario siempre configurará manualmente el primer número 
+        y luego se calculará automáticamente. 
+        """
         if self.country_code != 'PY':
             return super()._is_manual_document_number()
 
@@ -38,8 +40,9 @@ class AccountMove(models.Model):
             self.journal_id.l10n_py_dnit_pos_system in ['AUII_IM', 'AURLI_RLM']:
             return False
             
-        # NOTE: There is a corner case where 2 sales documents can have the same number for the same DOC from a
-        # different vendor, in that case, the user can create a new Sales Liquido Producto Journal
+        # NOTE: Existe un caso excepcional en el que dos documentos de venta pueden tener 
+        #       el mismo número de un proveedor diferente. 
+        #       En ese caso, el usuario puede crear un nuevo Diario de Ventas.
         return self.l10n_latam_use_documents and self.journal_id.type in ['purchase', 'sale'] and \
             not self.journal_id.l10n_py_is_pos
 

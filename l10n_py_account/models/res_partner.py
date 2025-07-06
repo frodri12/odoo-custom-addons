@@ -1,7 +1,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError, ValidationError
+from stdnum.util import clean
 import stdnum.py.ruc
+from stdnum.exceptions import InvalidLength, InvalidChecksum
+from stdnum.exceptions import ValidationError as ValidationErrorStdnum
+import curses.ascii
 import re
 import logging
 
@@ -12,21 +16,98 @@ ADDRESS_FIELDS = (
     'zip', 'city', 'state_id', 'l10n_py_district_id', 
     'l10n_py_city_id', 'country_id')
 
+## Funciones par ala validacion del RUC, reemplazand stdnum.py.ruc
+
+# Convierte el número a la representación mínima.
+def compact(number):
+    # Esto elimina el número de separadores válidos y elimina 
+    #   los espacios en blanco circundantes.
+    return clean(number, ' -').upper().strip()
+        
+# Calcular el dígito de control.        
+def calc_check_digit(number):
+    # El número pasado no debe incluir el dígito de control.
+    v_numero_al = ""
+    v_total = 0
+    for i, n in enumerate(number):
+        v_numero_al += str(n) if n.isdigit() else curses.ascii.ascii(n.upper())
+    for i, n in enumerate(reversed(v_numero_al)):
+        v_total += (int(n) * ((i % 10) + 2))
+    return 11 - (v_total % 11) if (v_total % 11) > 1 else 0
+        
+# Comprueba si el número es un RUC de Paraguay válido.        
+def validate(number):
+    # Esto verifica la longitud, el formato y el dígito de control.
+    number = compact(number)
+    if len(number) > 9:
+        raise InvalidLength()
+    if number[-1] != calc_check_digit(number[:-1]):
+        raise InvalidChecksum()
+    return number
+
+# Verifique si el número es un número RUC de Paraguay válido.
+def is_valid(number):
+    try:
+        return bool(validate(number))
+    except ValidationErrorStdnum:
+        return False
+
+# Reformatear el número al formato de presentación estándar.
+def format(number):
+    number = compact(number)
+    return '-'.join([number[:-1], number[-1]])
+
 class ResPartner(models.Model):
 
     _inherit = 'res.partner'
 
     l10n_py_dnit_responsibility_type_id = fields.Many2one(
-        'l10n_py.dnit.responsibility.type', string='DNIT Responsibility Type', index='btree_not_null', help='Defined by DNIT to'
-        ' identify the type of responsibilities that a person or a legal entity could have and that impacts in the'
-        ' type of operations and requirements they need.')
+        'l10n_py.dnit.responsibility.type', string='DNIT Responsibility Type', index='btree_not_null', 
+        help='Tipo de responsabilidad que una persona o entidad jurídica podría tener. Impactan en algunas operaciones.')
+
+
+    ###
+    ### Constraints
+    ###
+    @api.constrains('vat', 'l10n_latam_identification_type_id')
+    def check_vat(self):
+        # Dado que validamos más documentos que el RUC, ampliamos este método para su procesamiento.
+        # NOTA: Por el momento, también incluimos la validación del RUC
+        #       aquí, ya que ampliamos los mensajes de error para que sean más intuitivos.
+        l10n_py_partners = self.filtered(lambda p: p.l10n_latam_identification_type_id.l10n_py_dnit_code or p.country_code == 'PY')
+        l10n_py_partners.l10n_py_identification_validation()
+        return super(ResPartner, self - l10n_py_partners).check_vat()
+
+    def l10n_py_identification_validation(self):
+        for rec in self.filtered('vat'):
+            if not rec.l10n_latam_identification_type_id.l10n_py_dnit_code in ['0']:
+                continue
+
+            if rec.vat.split("-").__len__() > 1:  # El RUC viene con el separador
+                try:
+                    is_valid(rec.vat)
+                except stdnum.py.ruc.InvalidChecksum:
+                    no_digit = rec.vat.split("-")[0]
+                    msg = _("El digito de control del RUC %s es invalido [%s]", rec.vat, str(no_digit) + "-" + str(calc_check_digit( no_digit )))
+                    raise ValidationError(msg)
+                except stdnum.py.ruc.InvalidLength:
+                    raise ValidationError("Longitud no válida para el RUC [%s]" % rec.vat)
+                except stdnum.py.ruc.InvalidFormat:
+                    raise ValidationError("Solo se permiten números para el RUC [%s]" % rec.vat)
+                except Exception as error:
+                    raise ValidationError(repr(error))
+            else:
+                no_digit = str(rec.vat) + "-" + str(calc_check_digit(str(rec.vat)))
+                si_digit = str(rec.vat)[:-1] + "-" + str(calc_check_digit(str(rec.vat)[:-1]))
+                msg = _("El formato del RUC es incorrecto. [Posibles valores: %s o %s]", no_digit, si_digit)
+                raise ValidationError(msg)
 
     l10n_py_vat = fields.Char(
-        compute='_compute_l10n_py_vat', string="VAT", help='Computed field that returns VAT or nothing if this one'
-        ' is not set for the partner')
+        compute='_compute_l10n_py_vat', string="VAT", 
+        help='Campo calculado que devuelve el RUC o nada si este no está configurado')
     l10n_py_formatted_vat = fields.Char(
-        compute='_compute_l10n_py_formatted_vat', string="Formatted VAT", help='Computed field that will convert the'
-        ' given VAT number to the format {number:8}-{validation_number:1}')
+        compute='_compute_l10n_py_formatted_vat', string="Formatted VAT", 
+        help='Campo calculado que convertirá el número del RUC al formato {número:8}-{número_de_validación:1}')
 
     @api.depends('vat', 'l10n_latam_identification_type_id')
     def _compute_l10n_py_vat(self):
@@ -35,7 +116,7 @@ class ResPartner(models.Model):
         one is not found """
         recs_py_vat = self.filtered(lambda x: x.l10n_latam_identification_type_id.l10n_py_dnit_code == '0' and x.vat)
         for rec in recs_py_vat:
-            rec.l10n_py_vat = stdnum.py.ruc.compact(rec.vat)
+            rec.l10n_py_vat = compact(rec.vat)
         remaining = self - recs_py_vat
         remaining.l10n_py_vat = False
 
@@ -46,59 +127,11 @@ class ResPartner(models.Model):
         recs_py_vat = self.filtered('l10n_py_vat')
         for rec in recs_py_vat:
             try:
-                rec.l10n_py_formatted_vat = stdnum.py.ruc.format(rec.l10n_py_vat)
+                rec.l10n_py_formatted_vat = format(rec.l10n_py_vat)
             except Exception as error:
                 rec.l10n_py_formatted_vat = rec.l10n_py_vat
-                _logger.error("Paraguayan VAT was not formatted: %s", repr(error))
         remaining = self - recs_py_vat
         remaining.l10n_py_formatted_vat = False
-
-    ###
-    ### Constraints
-    ###
-    @api.constrains('vat', 'l10n_latam_identification_type_id')
-    def check_vat(self):
-        """ Since we validate more documents than the vat for Paraguayan partners (RUC - VAT PY, CI) we
-        extend this method in order to process it. """
-        # NOTE by the moment we include the RUC (VAT PY) validation also here because we extend the messages
-        # errors to be more friendly to the user. In a future when Odoo improve the base_vat message errors
-        # we can change this method and use the base_vat.check_vat_py method.s
-        l10n_py_partners = self.filtered(lambda p: p.l10n_latam_identification_type_id.l10n_py_dnit_code or p.country_code == 'PY')
-        l10n_py_partners.l10n_py_identification_validation()
-        return super(ResPartner, self - l10n_py_partners).check_vat()
-
-    def l10n_py_identification_validation(self):
-        for rec in self.filtered('vat'):
-            try:
-                module = rec._get_validation_module()
-            except Exception as error:
-                module = False
-                _logger.error("Paraguayan document was not validated: %s (%s)",repr(error))
-
-            if not module:
-                continue
-            try:
-                module.validate(rec.vat)
-            except module.InvalidChecksum:
-                raise ValidationError(_('The validation digit is not valid for "%s" [%s]',
-                                        rec.l10n_latam_identification_type_id.name,
-                                        str(stdnum.py.ruc.calc_check_digit(self.vat))))
-            except module.InvalidLength:
-                raise ValidationError(_('Invalid length for "%s"', rec.l10n_latam_identification_type_id.name))
-            except module.InvalidFormat:
-                raise ValidationError(_('Only numbers allowed for "%s"', rec.l10n_latam_identification_type_id.name))
-            except module.InvalidComponent:
-                valid_cuit = ('20', '23', '24', '27', '30', '33', '34', '50', '51', '55')
-                raise ValidationError(_('RUC number must be prefixed with one of the following: %s', ', '.join(valid_cuit)))
-            except Exception as error:
-                raise ValidationError(repr(error))
-
-    def _get_validation_module(self):
-        self.ensure_one()
-        if self.l10n_latam_identification_type_id.l10n_py_dnit_code in ['0']:
-            return stdnum.py.ruc
-        #elif self.l10n_latam_identification_type_id.l10n_py_dnit_code == '1':
-        #    return stdnum.py.ci
 
     ###
     ### Override
@@ -111,26 +144,27 @@ class ResPartner(models.Model):
     ###
     ###
     def ensure_vat(self):
-        """ This method is a helper that returns the VAT number is this one is defined if not raise an UserError.
+        # Este método es un ayudante que devuelve el número de RUC si éste está definido, 
+        # si no, se genera un Error.
 
-        VAT is not mandatory field but for some Paraguayan operations the VAT is required, for eg  validate an
-        electronic invoice, build a report, etc.
+        # El RUC no es un campo obligatorio, pero para algunas operaciones en Paraguay sí lo es, 
+        # por ejemplo, validar una factura electrónica, crear un informe, etc.
 
-        This method can be used to validate is the VAT is proper defined in the partner """
+        # Este método se puede utilizar para validar si el RUC está correctamente definido.
         self.ensure_one()
         if not self.l10n_py_vat:
-            raise UserError(_('No VAT configured for partner [%i] %s', self.id, self.name))
+            raise UserError(_('No RUC configured for partner [%i] %s', self.id, self.name))
         return self.l10n_py_vat
 
     def _get_id_number_sanitize(self):
-        """ Sanitize the identification number. Return the digits/integer value of the identification number
-        If not vat number defined return 0 """
+        # Depurar el número de identificación.
+        # Devolver los dígitos/valor del número de identificación.
+        # Si no se ha definido el número de RUC, devolver 0.
         self.ensure_one()
         if not self.vat:
             return 0
         if self.l10n_latam_identification_type_id.l10n_py_dnit_code in ['0']:
-            # Compact is the number clean up, remove all separators leave only digits
-            res = int(stdnum.py.ruc.compact(self.vat))
+            res = int(compact(self.vat))
         else:
             id_number = re.sub('[^0-9]', '', self.vat)
             res = int(id_number)
@@ -164,4 +198,3 @@ class ResPartner(models.Model):
     l10n_py_dnit_self_number = fields.Char("Nro de Constancia")
     l10n_py_dnit_self_control = fields.Char("Nro de Control")
     l10n_py_dnit_self_end_date = fields.Date("Fecha de Validez")
-    

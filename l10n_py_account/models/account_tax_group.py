@@ -12,4 +12,4 @@ class AccountTaxGroup(models.Model):
         ('3', '0%'),
         ('4', '5%'),
         ('5', '10%'),
-    ], string='VAT DNIT Code', index=True, readonly=True)
+    ], string='Tipo de IVA', index=True, readonly=True)
