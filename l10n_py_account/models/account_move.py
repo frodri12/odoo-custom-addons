@@ -234,9 +234,14 @@ class AccountMove(models.Model):
         if self.company_id.account_fiscal_country_id.code == 'PY' and self.l10n_latam_use_documents and self.partner_id \
            and not self.partner_id.l10n_py_dnit_responsibility_type_id:
 
+            if self.move_type == 'in_invoice' and self.journal_id.l10n_py_dnit_pos_system in ('AUII_IM','AURLI_RLM'):
+                self.partner_id.l10n_py_dnit_responsibility_type_id = 7
+            elif self.move_type == 'in_invoice' and self.journal_id.l10n_py_dnit_pos_system not in ('AUII_IM','AURLI_RLM'):
+                self.partner_id.l10n_py_dnit_responsibility_type_id = 1
+
             return {'warning': {
-                'title': _('Missing Partner Configuration'),
-                'message': _('Please configure the DNIT Responsibility for "%s" in order to continue',
+                'title': _('Configuración faltante'),
+                'message': _('Configure el tipo de responsabilidad de %s para continuar',
                     self.partner_id.name)}}
 
     @api.onchange('partner_id')

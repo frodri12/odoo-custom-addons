@@ -42,6 +42,10 @@ class L10nLatamDocumentType(models.Model):
         if not self.code:
             return document_number
 
+        # Para las facturas del exterior
+        if self.code in ['19']:
+            return document_number
+
         # Import Dispatch Number Validator
         if self.code in ['66', '67']:
             if len(document_number) != 16:
@@ -54,7 +58,7 @@ class L10nLatamDocumentType(models.Model):
                 )
             return document_number
 
-        # Invoice Number Validator (For Eg: 123-123)
+        # Invoice Number Validator (For Eg: 123-123-1234567)
         failed = False
         args = document_number.split('-')
         if len(args) != 3:
@@ -69,13 +73,12 @@ class L10nLatamDocumentType(models.Model):
                 failed = True
             document_number = '{:>03s}-{:>03s}-{:>07s}'.format(exp, pos, number)
         if failed:
-            raise UserError(
-                _(
-                    "%(valor)s no es un valor válido para %(campo)s..\nEl número de documento debe introducirse con un guiones (-).\nUn máximo de 3 caracteres para la primera parte, 3 caracteres para la segunda parte y 7 para la tercera.\nLos siguientes son ejemplos de números válidos:\n* 1-1-1\n* 001-001-0000001",
-                    value=document_number,
-                    field=self.name,
-                ),
-            )
+            msg = _("%(value)s no es un valor válido para %(field)s.", value=document_number,field=self.name)
+            msg += "\nEl número de documento debe introducirse con un guiones (-).\n"
+            msg += "Un máximo de 3 caracteres para la primera parte, 3 caracteres para la segunda parte"
+            msg += " y 7 para la tercera.\nLos siguientes son ejemplos de números válidos:\n* 1-1-1\n* 001-001-0000001"
+            msg += "self.code = %s" % str(self.code)
+            raise UserError(msg)
 
         return document_number
 

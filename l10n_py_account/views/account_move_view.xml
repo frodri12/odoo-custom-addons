@@ -18,6 +18,7 @@
                 </div>
             </xpath>
 
+            <!-- 
             <field name="invoice_vendor_bill_id" position="after">
                 <field name="l10n_py_dnit_auth_code"
                     invisible="move_type in ('out_invoice','out_refund','entry')" />
@@ -26,6 +27,20 @@
                 <field name="l10n_py_dnit_auth_enddate"
                     invisible="move_type in ('out_invoice','out_refund','entry')" />
             </field>
+            -->
+
+            <xpath expr="//page[1]" position="after">
+                <page string="Timbrado"
+                    invisible="move_type in ('out_invoice','out_refund','entry') or journal_id.l10n_py_dnit_pos_system in ('AUII_IM','AURLI_RLM')">
+                    <group>
+                        <group string="Datos del timbrado">
+                            <field name="l10n_py_dnit_auth_code" />
+                            <field name="l10n_py_dnit_auth_startdate" />
+                            <field name="l10n_py_dnit_auth_enddate" />
+                        </group>
+                    </group>
+                </page>
+            </xpath>
 
         </field>
     </record>

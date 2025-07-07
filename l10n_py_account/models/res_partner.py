@@ -30,7 +30,7 @@ def calc_check_digit(number):
     v_numero_al = ""
     v_total = 0
     for i, n in enumerate(number):
-        v_numero_al += str(n) if n.isdigit() else curses.ascii.ascii(n.upper())
+        v_numero_al += str(n) if n.isdigit() else str(ord(curses.ascii.ascii(n.upper())))
     for i, n in enumerate(reversed(v_numero_al)):
         v_total += (int(n) * ((i % 10) + 2))
     return 11 - (v_total % 11) if (v_total % 11) > 1 else 0
@@ -85,7 +85,8 @@ class ResPartner(models.Model):
 
             if rec.vat.split("-").__len__() > 1:  # El RUC viene con el separador
                 try:
-                    is_valid(rec.vat)
+                    if not is_valid(rec.vat):
+                        raise ValidationError("El número de RUC es inválido")
                 except stdnum.py.ruc.InvalidChecksum:
                     no_digit = rec.vat.split("-")[0]
                     msg = _("El digito de control del RUC %s es invalido [%s]", rec.vat, str(no_digit) + "-" + str(calc_check_digit( no_digit )))
@@ -94,8 +95,8 @@ class ResPartner(models.Model):
                     raise ValidationError("Longitud no válida para el RUC [%s]" % rec.vat)
                 except stdnum.py.ruc.InvalidFormat:
                     raise ValidationError("Solo se permiten números para el RUC [%s]" % rec.vat)
-                except Exception as error:
-                    raise ValidationError(repr(error))
+                #except Exception as error:
+                #    raise ValidationError(repr(error))
             else:
                 no_digit = str(rec.vat) + "-" + str(calc_check_digit(str(rec.vat)))
                 si_digit = str(rec.vat)[:-1] + "-" + str(calc_check_digit(str(rec.vat)[:-1]))
@@ -195,6 +196,6 @@ class ResPartner(models.Model):
     l10n_py_dnit_auth_startdate = fields.Date("Fecha de Inicio del Timbrado")
     l10n_py_dnit_auth_enddate = fields.Date("Fecha de FIn del Timbrado")
     
-    l10n_py_dnit_self_number = fields.Char("Nro de Constancia")
-    l10n_py_dnit_self_control = fields.Char("Nro de Control")
+    l10n_py_dnit_self_number = fields.Char("Número de Constancia")
+    l10n_py_dnit_self_control = fields.Char("Número de Control")
     l10n_py_dnit_self_end_date = fields.Date("Fecha de Validez")

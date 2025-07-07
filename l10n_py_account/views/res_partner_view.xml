@@ -46,11 +46,23 @@
 
             <xpath expr="//page[4]" position="after">
                 <page string="AutoFactura"
-                    invisible="country_code != 'PY' or l10n_py_dnit_responsibility_type_id != 4">
+                    invisible="country_code != 'PY' or l10n_py_dnit_responsibility_type_id != 4 or supplier_rank == 0">
                     <group>
-                        <field name="l10n_py_dnit_self_number" />
-                        <field name="l10n_py_dnit_self_control" />
-                        <field name="l10n_py_dnit_self_end_date" />
+                        <group string="Comprobante de No Contribuyente">
+                            <field name="l10n_py_dnit_self_number" />
+                            <field name="l10n_py_dnit_self_control" />
+                            <field name="l10n_py_dnit_self_end_date" />
+                        </group>
+                    </group>
+                </page>
+                <page string="DNIT"
+                    invisible="country_code != 'PY' or supplier_rank == 0">
+                    <group>
+                        <group string="Datos por defecto del timbrado">
+                            <field name="l10n_py_dnit_auth_code" />
+                            <field name="l10n_py_dnit_auth_startdate" />
+                            <field name="l10n_py_dnit_auth_enddate" />
+                        </group>
                     </group>
                 </page>
             </xpath>

@@ -342,13 +342,13 @@ def _get_gCamAE( partnerId:Partner, companyId:Company):
         gCamAE.update({"dNumCasVen": partnerId.l10n_py_house if partnerId.l10n_py_house else 1}) #E309
         gCamAE.update({"cDepVen": partnerId.state_id.code}) #E310
         if not partnerId.state_id:
-            raise ValidationError("Falta definir el departamento del Vendedor")
+            raise ValidationError("Falta definir el departamento del Proveedor")
         cDisVen = partnerId.l10n_py_district_id.code
         if cDisVen and cDisVen != None:
             gCamAE.update({"cDisVen": cDisVen}) #E312
         cCiuVen = partnerId.l10n_py_city_id.code
         if not cCiuVen or cCiuVen == None:
-            raise ValidationError("Falta definir la ciudad en el Vendedor")
+            raise ValidationError("Falta definir la ciudad en el Proveedor")
         else:
             gCamAE.update({"cCiuVen": cCiuVen}) #E314
     gCamAE.update({"dDirProv": companyId.street}) #E316
@@ -608,6 +608,10 @@ def _get_gCamDEAsoc( moveId:AccountMove):
         gCamDEAsoc.update({"iTipCons":1}) #H014
         gCamDEAsoc.update({"dNumCons":moveId.partner_id.l10n_py_dnit_self_number}) #H016
         gCamDEAsoc.update({"dNumControl":moveId.partner_id.l10n_py_dnit_self_control}) #H017
+        if not moveId.partner_id.l10n_py_dnit_self_end_date or moveId.partner_id.l10n_py_dnit_self_end_date < moveId.invoice_date:
+            raise ValidationError("El comprobante de no contribuyente para la autofactura se encuentra vencido")
+        if not moveId.partner_id.l10n_py_dnit_self_control or not moveId.partner_id.l10n_py_dnit_self_number:
+            raise ValidationError("Faltan datos del combrobante de no contribuyente para la autofactura")        
     return gCamDEAsoc
 
 def _get_xmlgen_documentoAsociado(moveId:AccountMove):
