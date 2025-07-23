@@ -57,6 +57,9 @@
         <!-- remove default document title -->
         <xpath expr="//t[@t-set='layout_document_title']" position="replace" />
 
+        <xpath expr="//div[hasclass('invoice_main')]" position="attributes">
+            <attribute name="style" add="height:800px" separator=";" />
+        </xpath>
         <!-- -->
         <xpath expr="//div[@id='informations']" position="replace">
             <div id="informations" class="row mb-4">
@@ -279,9 +282,17 @@
         <xpath expr="//div[@id='payment_term']" position="replace"></xpath>
 
         <!-- Agregado de valores de IVA -->
+        <!--
         <xpath expr="//div[@id='right-elements']" position="before">
             <t t-call="l10n_py_account.kude_subtotal_taxes" t-lang="lang"></t>
         </xpath>
+        -->
+        <xpath expr="//div[hasclass('invoice_main')]" position="after">
+            <xpath expr="//div[@id='right-elements']" position="before">
+                <t t-call="l10n_py_account.kude_subtotal_taxes" t-lang="lang"></t>
+            </xpath>
+        </xpath>
+
     </template>
 
     <template id="kude_subtotal_taxes">
@@ -307,7 +318,7 @@
                 </t>
             </t>
         </t>
-        <table class="table table-borderless">
+        <table class="table table-borderless" style="font-size:0.7rem">
             <tr>
                 <td class="text-start" colspan="5">
                     <strong>TOTAL OPERATION:</strong>

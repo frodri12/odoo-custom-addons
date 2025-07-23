@@ -40,15 +40,22 @@ def validate(number):
     # Esto verifica la longitud, el formato y el dígito de control.
     number = compact(number)
     if len(number) > 9:
-        raise InvalidLength()
-    if number[-1] != calc_check_digit(number[:-1]):
-        raise InvalidChecksum()
+        return -1 # raise InvalidLength()
+    if str(number[-1]) != str(calc_check_digit(number[:-1])):
+        return -2 # raise InvalidChecksum()
     return number
 
 # Verifique si el número es un número RUC de Paraguay válido.
 def is_valid(number):
+    n = 0
     try:
-        return bool(validate(number))
+        n = validate(number)
+        if n == -1:
+            raise InvalidLength()
+        elif n == -2:
+            raise InvalidChecksum()
+        #return bool(validate(number))
+        return True
     except ValidationErrorStdnum:
         return False
 
@@ -64,7 +71,6 @@ class ResPartner(models.Model):
     l10n_py_dnit_responsibility_type_id = fields.Many2one(
         'l10n_py.dnit.responsibility.type', string='DNIT Responsibility Type', index='btree_not_null', 
         help='Tipo de responsabilidad que una persona o entidad jurídica podría tener. Impactan en algunas operaciones.')
-
 
     ###
     ### Constraints

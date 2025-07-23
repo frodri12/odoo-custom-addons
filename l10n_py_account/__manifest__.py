@@ -73,6 +73,9 @@ Demo data for testing:
         'views/report_invoice.xml',
         'views/account_tax_view.xml',
         'views/product_template_view.xml',
+        'views/account_report.xml',
+        'views/report_payment_receipt_templates.xml',
+        'views/report_payment_order_templates.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

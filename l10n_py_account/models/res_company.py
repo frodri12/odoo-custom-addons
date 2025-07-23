@@ -98,3 +98,5 @@ class ResCompany(models.Model):
         string="DNIT Environment", default='testing',
         help="Entorno utilizado para conectarse a los servicios web de ls DNIT.")
 
+    l10n_py_custom_report_payment = fields.Boolean(string="Reporte de pagos personalizado", default=False)
+
