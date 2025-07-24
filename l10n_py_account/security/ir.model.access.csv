@@ -4,3 +4,4 @@ l10n_py_account.access_l10n_py_district,access_l10n_py_district,l10n_py_account.
 l10n_py_account.access_l10n_py_city,access_l10n_py_city,l10n_py_account.model_l10n_py_city,base.group_user,1,1,1,1
 l10n_py_account.access_l10n_py_economic_activity,access_l10n_py_economic_activity,l10n_py_account.model_l10n_py_economic_activity,base.group_user,1,1,1,1
 l10n_py_account.access_l10n_py_regime_type,access_l10n_py_regime_type,l10n_py_account.model_l10n_py_regime_type,base.group_user,1,1,1,1
+l10n_py_account.access_account_py_vat_line,access_account_py_vat_line,l10n_py_account.model_account_py_vat_line,base.group_user,1,1,1,1

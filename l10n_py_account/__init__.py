@@ -4,7 +4,7 @@ from odoo import api
 
 from . import models
 from . import demo
-
+from . import report
 
 def install_languages(env):
     """ Post init function """

@@ -76,6 +76,7 @@ Demo data for testing:
         'views/account_report.xml',
         'views/report_payment_receipt_templates.xml',
         'views/report_payment_order_templates.xml',
+        'report/account_py_vat_line_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
