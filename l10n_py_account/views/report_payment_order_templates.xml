@@ -127,46 +127,37 @@
                 <div class="row"><div class="col-10"><![CDATA[&nbsp;]]></div></div>
                 <div class="row"><div class="col-10"><![CDATA[&nbsp;]]></div></div>
 
-                <div class="row">
-                    <div class="col-2"><span>________________</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-6"><span>___________</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>______</span></div>
-                </div>
-                <div class="row">
-                    <div class="col-2"><span>Recibo conforme</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-6"><span>Aclaracion</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>Fecha</span></div>
-                </div>
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="col-3" style="height:100px" ><![CDATA[&nbsp;]]></td>
+                            <td class="col-6"><![CDATA[&nbsp;]]></td>
+                            <td><![CDATA[&nbsp;]]></td>
+                        </tr>
+                        <tr>
+                            <td><span>Recibo conforme</span></td>
+                            <td><span>Aclaracion</span></td>
+                            <td><span>Fecha</span></td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                <div class="row"><div class="col-10"><![CDATA[&nbsp;]]></div></div>
-                <div class="row"><div class="col-10"><![CDATA[&nbsp;]]></div></div>
-                <div class="row"><div class="col-10"><![CDATA[&nbsp;]]></div></div>
-                <div class="row"><div class="col-10"><![CDATA[&nbsp;]]></div></div>
-
-                <div class="row">
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>_______________________</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>_______________________</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>_____________</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>_____________</span></div>
-                </div>
-                <div class="row">
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>Auxiliar administrativo</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>Encargada asministrativa</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>Autorizacion 1</span></div>
-                    <div class="col-1"><![CDATA[&nbsp;]]></div>
-                    <div class="col-2"><span>Autorizacion 2</span></div>
-                </div>
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="col-2" style="height:100px"><![CDATA[&nbsp;]]></td>
+                            <td class="col-2"><![CDATA[&nbsp;]]></td>
+                            <td class="col-2"><![CDATA[&nbsp;]]></td>
+                            <td class="col-2"><![CDATA[&nbsp;]]></td>
+                        </tr>
+                        <tr>
+                            <td>Auxiliar administrativo</td>
+                            <td>Encargada asministrativa</td>
+                            <td>Autorizacion 1</td>
+                            <td>Autorizacion 2</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </t>
     </template>

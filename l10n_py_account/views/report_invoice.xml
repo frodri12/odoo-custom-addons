@@ -180,7 +180,12 @@
                 <span t-if="code_custom" t-out="code_custom" t-options="{'widget': 'text'}">Cod</span>
             </td>
             <td name="account_invoice_line_name">
-                <span t-if="line.product_id.name" t-field="line.product_id.name" t-options="{'widget': 'text'}">Bacon Burger</span>
+                <t t-if="line.product_id.name">
+                    <span t-field="line.product_id.name" t-options="{'widget': 'text'}">Bacon Burger</span>
+                </t>
+                <t t-else="">
+                    <span t-field="line.name" t-options="{'widget': 'text'}">Bacon Burger</span>
+                </t>
             </td>
         </xpath>
 
