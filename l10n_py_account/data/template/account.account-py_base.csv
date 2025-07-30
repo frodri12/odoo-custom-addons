@@ -127,7 +127,7 @@ py_acc_chart_32040101,3.2.04.01.01,"Reserva de revalúo técnico",equity,False
 py_acc_chart_32050101,3.2.05.01.01,"Reservas estatuitaria",equity,False
 py_acc_chart_32050102,3.2.05.01.02,"Reservas facultativas",equity,False
 py_acc_chart_32050103,3.2.05.01.03,"Reservas futuras inversiones",equity,False
-py_acc_chart_33010101,3.3.01.01.01,"Resulyados acumulados",equity,False
+py_acc_chart_33010101,3.3.01.01.01,"Resultados acumulados",equity,False
 py_acc_chart_33990101,3.3.99.01.01,"Resultado del ejercicio",equity_unaffected,False
 py_acc_chart_33990102,3.3.99.01.02,"Resultados de ejercicios anteriores",equity,False
 py_acc_chart_33990102,3.3.99.01.02,"Ajuste de resultados de ejercicios anteriores",equity,False
