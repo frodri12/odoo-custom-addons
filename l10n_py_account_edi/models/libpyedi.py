@@ -225,13 +225,6 @@ def _get_gDatRec(moveId:AccountMove):
                 gDatRec.update({"dNumIDRec":moveId.partner_id.vat}) #D210
 
         gDatRec.update({"iTiOpe":1 if moveId.partner_id.is_company else 2}) #D202
-        if moveId.partner_id.l10n_latam_identification_type_id.l10n_py_dnit_code and moveId.partner_id.l10n_latam_identification_type_id.l10n_py_dnit_code != '0':
-            if moveId.partner_id.country_id.l10n_py_alpha_code == 'PRY':
-                gDatRec.update({"iTiOpe":2}) #D202
-            else:
-                gDatRec.update({"iTiOpe":4}) #D202
-        else:
-            gDatRec.update({"iTiOpe":2}) #D202
         if moveId.partner_id.country_id.l10n_py_alpha_code != "PRY":
             gDatRec.update({"iTiOpe":4}) #D202
         gDatRec.update({"cPaisRec":moveId.partner_id.country_id.l10n_py_alpha_code}) #D203
