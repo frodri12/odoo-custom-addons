@@ -32,6 +32,11 @@
             <field name="value">https://3df.com.ar/pyrite</field>
         </record>
 
+        <record id="ir_config_l10n_py_edi_url_kude_prod" model="ir.config_parameter">
+            <field name="key">l10n_py_edi.url.kude.prod</field>
+            <field name="value">https://3df.com.ar/pyrite/kude.php</field>
+        </record>
+
         <!-- TEST -->
         <record id="ir_config_l10n_py_edi_url_recibe_test" model="ir.config_parameter">
             <field name="key">l10n_py_edi.url.recibe.test</field>
@@ -61,6 +66,11 @@
         <record id="ir_config_l10n_py_edi_url_consulta_test" model="ir.config_parameter">
             <field name="key">l10n_py_edi.url.consulta.test</field>
             <field name="value">https://3df.com.ar/pyrite</field>
+        </record>
+
+        <record id="ir_config_l10n_py_edi_url_kude_test" model="ir.config_parameter">
+            <field name="key">l10n_py_edi.url.kude.test</field>
+            <field name="value">https://3df.com.ar/pyrite/kude.php</field>
         </record>
 
     </data>

@@ -11,7 +11,7 @@ import requests
 
 from . import libpyedi
 from . import libpydnitws
-
+import urllib.parse
 
 _logger = logging.getLogger(__name__)
 
@@ -211,3 +211,26 @@ class AccountMove(models.Model):
         super()._compute_show_reset_to_draft_button()
         self.filtered(lambda move: move.l10n_py_dnit_ws_response_estres == "A" or move.l10n_py_dnit_ws_response_estres == "O").show_reset_to_draft_button = False
 
+    l10n_py_dnit_show_print_button = fields.Boolean(compute="_compute_show_button", store=False)
+
+    @api.depends('journal_id')
+    def _compute_show_button( self):
+        for rec in self:
+            if rec.journal_id.l10n_py_dnit_pos_system and rec.journal_id.l10n_py_dnit_pos_system in ('RLI_RLM','AURLI_RLM'):
+                rec.l10n_py_dnit_show_print_button = True
+            else:
+                rec.l10n_py_dnit_show_print_button = False
+
+    def action_mostrar_factura( self):
+        base_url = self._get_l10n_py_dnit_ws_url("kude") + "/?"
+        params = {
+            'empresa': self.company_id.partner_id.vat.split("-")[0],
+            'id': self.l10n_py_dnit_ws_response_cdc
+        }
+        encoded_params = urllib.parse.urlencode(params)
+        full_url = base_url + encoded_params
+        return {
+            'type': 'ir.actions.act_url',
+            'url': full_url,
+            'target': 'new',
+        }
