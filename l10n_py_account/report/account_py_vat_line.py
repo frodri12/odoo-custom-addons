@@ -5,6 +5,7 @@ from odoo.tools import SQL
 class AccountPyVatLine(models.Model):
 
     _name = "account.py.vat.line"
+    _description = "account.py.vat.line"
     _rec_name = 'move_name'
     _auto = False
     _order = 'invoice_date asc, move_name asc, id asc'
@@ -34,7 +35,7 @@ class AccountPyVatLine(models.Model):
     base_5 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="Grav. 5%")
     not_taxed = fields.Monetary(readonly=True, currency_field='company_currency_id', string="Exento")
     vat_10 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="VAT 10%")
-    vat_5 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="VAT 10%")
+    vat_5 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="VAT 5%")
     base_tax10 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="G 10%")
     base_tax5 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="G 5%")
     base_exe = fields.Monetary(readonly=True, currency_field='company_currency_id', string="Exento")
