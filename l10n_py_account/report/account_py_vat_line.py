@@ -38,7 +38,7 @@ class AccountPyVatLine(models.Model):
     vat_5 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="VAT 5%")
     base_tax10 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="G 10%")
     base_tax5 = fields.Monetary(readonly=True, currency_field='company_currency_id', string="G 5%")
-    base_exe = fields.Monetary(readonly=True, currency_field='company_currency_id', string="Exento")
+    base_exe = fields.Monetary(readonly=True, currency_field='company_currency_id', string="Base Exento")
 
     tipo_identificacion = fields.Char("TIPO IDENTIFICACION") 
     l10n_latam_identification_type_id = fields.Many2one('l10n_latam.identification.type', 'TIPO DE IDENTIFICACION', readonly=True, auto_join=True)
