@@ -8,7 +8,7 @@
 
             <xpath expr="//div[@name='currency_conversion_div']" position="replace">
                 <div name="inverse_currency_conversion_div" class="d-flex text-muted float-start"
-                    invisible="currency_id == company_currency_id">
+                    invisible="currency_id == company_currency_id" style="white-space: pre;">
                     <span>1 </span>
                     <field name="currency_id" readonly="1" options="{'no_open': True}" />
                     <span> = </span>

@@ -28,11 +28,8 @@ def process_response_dnit( response_data):
     Process the response from the DNIT
     """
     return_value = {}
-    _logger.error( "TYPE response_data => %s", str(type(response_data)))
-    _logger.error( "TEXT response_data => %s", str((response_data)))
     #response = response_data.json()
     response = json.loads(response_data) 
-    _logger.error( "TYPE response => %s", str(type(response)))
 
     if int(response['code']) != 0:
         return_value.update({'dEstRes': 'E'})

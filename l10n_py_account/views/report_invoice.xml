@@ -464,7 +464,7 @@
                     <t t-if="o.company_id.l10n_py_dnit_ws_environment == 'testing'">
                         <span t-field="o.journal_id.l10n_py_dnit_timbrado_test" />
                         <br />
-                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Activities Start: </span>
+                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Fecha Inicio Vigencia: </span>
                         <span t-field="o.journal_id.l10n_py_dnit_timbrado_start_date_test" />
                     </t>
                     <t t-else="o.company_id.l10n_py_dnit_ws_environment == 'testing'">

@@ -171,7 +171,6 @@ class AccountJournal(models.Model):
             # electronic invoices (wsfev1) (intersection between available docs on ws and codes_issuer_is_supplier)
             codes = ['60', '61']
         elif self.type == 'purchase':
-            _logger.error( 'Paso por aca al elegir autofactura')
             return [('code', 'not in', codes_issuer_is_supplier)]
         elif dnit_pos_system == 'II_IM':
             # pre-printed invoice

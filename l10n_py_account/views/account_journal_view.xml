@@ -19,7 +19,7 @@
             </field>
 
             <xpath expr="//page[@name='advanced_settings']" position="after">
-                <page name="dnit" string="DNIT" invisible="l10n_py_dnit_pos_system not in ('RLI_RLM','AURLI_RLM','BFERCEL','FEERCEL','CPERCEL')">
+                <page name="dnit" string="DNIT" invisible="l10n_py_dnit_pos_system not in ('II_IM','RLI_RLM','AUII_IM', 'AURLI_RLM','BFERCEL','FEERCEL','CPERCEL')">
                     <group>
                         <group string="Producción">
                             <field name="l10n_py_dnit_timbrado" />

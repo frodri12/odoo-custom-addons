@@ -67,6 +67,7 @@ class AccountMove(models.Model):
             #return_info = inv._l10n_ar_do_afip_ws_request_cae(client, auth, transport)
             return_info = inv._l10n_py_do_dnit_ws_request()
             if return_info:
+                _logger.error( "Error de la SET: %s" % str(inv.l10n_py_dnit_ws_request_json))
                 error_invoice = inv
                 validated -= inv
                 break
