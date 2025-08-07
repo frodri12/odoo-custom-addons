@@ -32,6 +32,7 @@ def process_response_dnit( response_data):
     response = json.loads(response_data) 
 
     if int(response['code']) != 0:
+        _logger.error(str(response))
         return_value.update({'dEstRes': 'E'})
         return_value.update({'dCodRes': str(response['code'])})
         return_value.update({'dMsgRes': response.get("message")})
@@ -43,6 +44,7 @@ def process_response_dnit( response_data):
                 return_value.update({'dMsgRes': str(payload['errstr'])})
         return return_value
 
+    _logger.info(str(response))
     rProtDe = _get_rProtDe( response)
     if rProtDe == None:
         return return_value
