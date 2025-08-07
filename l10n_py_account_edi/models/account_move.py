@@ -235,3 +235,9 @@ class AccountMove(models.Model):
             'url': full_url,
             'target': 'new',
         }
+
+    def action_print_pdf(self):
+        if self.l10n_py_dnit_show_print_button:
+            return self.action_mostrar_factura()
+        return super().action_print_pdf()
+

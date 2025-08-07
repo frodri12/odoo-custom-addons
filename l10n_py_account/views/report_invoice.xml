@@ -180,12 +180,15 @@
                 <span t-if="code_custom" t-out="code_custom" t-options="{'widget': 'text'}">Cod</span>
             </td>
             <td name="account_invoice_line_name">
+                <span t-field="line.name" t-options="{'widget': 'text'}">Bacon Burger</span>
+                <!--
                 <t t-if="line.product_id.name">
                     <span t-field="line.product_id.name" t-options="{'widget': 'text'}">Bacon Burger</span>
                 </t>
                 <t t-else="">
                     <span t-field="line.name" t-options="{'widget': 'text'}">Bacon Burger</span>
                 </t>
+                -->
             </td>
         </xpath>
 
@@ -466,12 +469,18 @@
                         <br />
                         <span t-att-style="'color: %s;' % o.company_id.secondary_color">Fecha Inicio Vigencia: </span>
                         <span t-field="o.journal_id.l10n_py_dnit_timbrado_start_date_test" />
+                        <br />
+                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Fecha Fin Vigencia: </span>
+                        <span t-field="o.journal_id.l10n_py_dnit_timbrado_end_date_test" />
                     </t>
                     <t t-else="o.company_id.l10n_py_dnit_ws_environment == 'testing'">
                         <span t-field="o.journal_id.l10n_py_dnit_timbrado" />
                         <br />
-                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Activities Start: </span>
+                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Fecha Inicio Vigencia: </span>
                         <span t-field="o.journal_id.l10n_py_dnit_timbrado_start_date" />
+                        <br />
+                        <span t-att-style="'color: %s;' % o.company_id.secondary_color">Fecha Fin Vigencia: </span>
+                        <span t-field="o.journal_id.l10n_py_dnit_timbrado_end_date" />
                     </t>
                 </div>
             </div>

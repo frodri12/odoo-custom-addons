@@ -490,7 +490,9 @@ def _get_gCamItem( lineId:AccountMoveLine):
     #gCamItem.update({"dDncpE":12345}) #E705
     #gCamItem.update({"dGtin":12345}) #E706
     #gCamItem.update({"dGtinPq":12345}) #E707
-    gCamItem.update({"dDesProSer":productId.name}) #E708
+    
+    #  gCamItem.update({"dDesProSer":productId.name}) #E708
+    gCamItem.update({"dDesProSer":lineId.name}) #E708
     gCamItem.update({"cUniMed":productId.uom_id.l10n_py_dnit_code}) #E709
     gCamItem.update({"dCantProSer":lineId.quantity}) #E711
     # E8.1 campos que describen el precio, tipo de cambio y valor total dela operacion pro item (E720-E729)

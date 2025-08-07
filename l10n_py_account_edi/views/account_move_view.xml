@@ -39,6 +39,7 @@
             </xpath>
 
             <!-- [contains(@class, 'oe_highlight')] -->
+            <!--
             <xpath expr="//button[@name='action_print_pdf']" position="replace">
                 <button name="action_print_pdf" type="object" class="oe_highlight"
                    invisible="state != 'posted' or is_being_sent or invoice_pdf_report_id or move_type == 'entry' or l10n_py_dnit_show_print_button == True"
@@ -47,6 +48,7 @@
                    invisible="state != 'posted' or is_being_sent or invoice_pdf_report_id or move_type == 'entry' or l10n_py_dnit_show_print_button == False"
                    string="Print"/>
             </xpath>
+            -->
             <!--
             <xpath expr="//button[@name='action_print_pdf']" position="replace">
                 <button name="action_print_pdf" type="object" 
