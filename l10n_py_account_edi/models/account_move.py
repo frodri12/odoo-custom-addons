@@ -241,3 +241,8 @@ class AccountMove(models.Model):
             return self.action_mostrar_factura()
         return super().action_print_pdf()
 
+    def action_invoice_sent(self):
+        if self.l10n_py_dnit_show_print_button:
+            return self.action_mostrar_factura()
+        return super().action_invoice_sent()
+
