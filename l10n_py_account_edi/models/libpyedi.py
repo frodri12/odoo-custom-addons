@@ -564,7 +564,7 @@ def _get_xmlgem_item(lineId:AccountMoveLine):
     item.update({"codigo":gCamItem.get("dCodInt")})
     item.update({"descripcion":gCamItem.get("dDesProSer")})
     if gCamItem.get("dNCM") != None:
-        item.update({"qwerty":gCamItem.get("dNCM")})
+        item.update({"ncm":gCamItem.get("dNCM")})
     item.update({"unidadMedida":gCamItem.get("cUniMed")})
     item.update({"cantidad":gCamItem.get("dCantProSer")})
     item.update({"precioUnitario":gValorItem.get("dPUniProSer")})
