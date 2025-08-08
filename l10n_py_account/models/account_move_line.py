@@ -62,10 +62,12 @@ class l10nPyAccountMoveLine(models.Model):
                     line.l10n_py_base_grav_exe = float_round(  line.l10n_py_base_grav_exe,  precision_rounding=precision_rounding)
                 if ivaAmount == 5:
                     line.l10n_py_base_grav_tax5 = (100 * dTotOpeItem * ivaBase) / (10000 + (ivaAmount * ivaBase))
+                    line.l10n_py_base_grav_tax5 = dTotOpeItem - line.l10n_py_base_grav_exe
                     if rounding_method== 'round_per_line':
                         line.l10n_py_base_grav_tax5 = float_round(  line.l10n_py_base_grav_tax5,  precision_rounding=precision_rounding)
                 if ivaAmount == 10:
                     line.l10n_py_base_grav_tax10 = (100 * dTotOpeItem * ivaBase) / (10000 + (ivaAmount * ivaBase))
+                    line.l10n_py_base_grav_tax10 = dTotOpeItem - line.l10n_py_base_grav_exe
                     if rounding_method== 'round_per_line':
                         line.l10n_py_base_grav_tax10 = float_round(  line.l10n_py_base_grav_tax10,  precision_rounding=precision_rounding)
                     
