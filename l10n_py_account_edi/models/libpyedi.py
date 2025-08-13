@@ -147,7 +147,7 @@ def _get_gOpeCom(moveId:AccountMove):
     gOpeCom.update({"cMoneOpe":moveId.currency_id.name}) #D015
     if moveId.currency_id.name != 'PYG':
         gOpeCom.update({"dCondTiCam":1}) #D017
-        gOpeCom.update({"dTiCam":1 / moveId.invoice_currency_rate}) #D018
+        gOpeCom.update({"dTiCam":round(1 / moveId.invoice_currency_rate, 2)}) #D018
     return gOpeCom
 
 # D2 Campos que identifican al emisor del Documento Electronico (D100-D129)
@@ -454,7 +454,7 @@ def _get_gPaConEIni(moveId:AccountMove):
     gPaConEIni.update({"dMonTiPag":moveId.amount_total}) #E608
     gPaConEIni.update({"cMoneTiPag":moveId.currency_id.name}) #E609
     if moveId.currency_id.name != 'PYG':
-        gPaConEIni.update({"dTiCamTiPag":1 / moveId.invoice_currency_rate}) #E611
+        gPaConEIni.update({"dTiCamTiPag":round(1 / moveId.invoice_currency_rate,2)}) #E611
     return gPaConEIni
 
 # E7.1.1 Campos que describen el pago o entrega inicial de la operacion con tarjeta de credito/debito

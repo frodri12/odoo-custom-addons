@@ -344,7 +344,9 @@
                         <span>Total to pay: </span>
                     </td>
                     <td class="text-end" colspan="6">
-                        <span class="text-muted lh-sm" t-field="o.amount_total_words" />
+                        <small class="text-muted lh-sm">
+                            <span  t-field="o.amount_total_words">Thirty one dollar and Five cents</span>
+                        </small>
                     </td>
                 </tr>
             </t>
