@@ -42,7 +42,11 @@ class AccountMove(models.Model):
         readonly=True, store=True, index = True,tracking=True, copy=False)
 
     def _get_l10n_py_dnit_ws_url( self, key):
-        sKey = 'l10n_py_edi.url.' + key + '.test' if self.company_id.l10n_py_dnit_ws_environment == 'testing' else '.prod'
+        sKey = 'l10n_py_edi.url.' + key + ('.test' if self.company_id.l10n_py_dnit_ws_environment == 'testing' else '.prod')
+        if self.company_id.l10n_py_dnit_ws_environment == 'testing':
+            sKey = 'l10n_py_edi.url.' + key + '.test'
+        else:
+            sKey = 'l10n_py_edi.url.' + key + '.prod'
 
         ICP = self.env['ir.config_parameter'].sudo()
         sRet = str(ICP.get_param(sKey))
