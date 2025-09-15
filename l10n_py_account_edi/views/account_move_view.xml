@@ -21,6 +21,8 @@
                             <field name="l10n_py_dnit_ws_response_estres" />
                             <field name="l10n_py_dnit_ws_response_fecproc" />
                             <field name="l10n_py_dnit_ws_random_code" />
+                            <field name="l10n_py_dnit_ws_response_protconslote" />
+                            <field name="l10n_py_dnit_ws_response_tpoproces" />
                         </group>
                         <group>
                             <field name="l10n_py_dnit_ws_response_cdc" />

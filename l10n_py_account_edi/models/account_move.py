@@ -26,7 +26,7 @@ class AccountMove(models.Model):
     l10n_py_dnit_ws_response_fecproc = fields.Char(string="Fecha de procesado", readonly=True, tracking=True, copy=False)
     l10n_py_dnit_ws_response_digval = fields.Char(string="Digito de verificacion", readonly=True, tracking=True, copy=False)
     l10n_py_dnit_ws_response_estres = fields.Selection(selection=[
-            ('P', 'Pending'),('E', 'Error'),('A', 'Aproved'),
+            ('P', 'Pending'),('E', 'Error'),('A', 'Aproved'),('L', 'Lot'),
             ('O', 'Aproved with Observations'),('R', 'Rejected'),
         ], string='DNIT Status', default='P', readonly=True,tracking=True, copy=False)
     
@@ -41,6 +41,9 @@ class AccountMove(models.Model):
     l10n_py_dnit_ws_random_code = fields.Char(string='Random Code', 
         readonly=True, store=True, index = True,tracking=True, copy=False)
 
+    l10n_py_dnit_ws_response_protconslote = fields.Char(string="Lote", readonly=True, tracking=True, copy=False)
+    l10n_py_dnit_ws_response_tpoproces = fields.Char(string="Tiempo promedio de proceso", readonly=True, tracking=True, copy=False)
+
     def _get_l10n_py_dnit_ws_url( self, key):
         sKey = 'l10n_py_edi.url.' + key + ('.test' if self.company_id.l10n_py_dnit_ws_environment == 'testing' else '.prod')
         if self.company_id.l10n_py_dnit_ws_environment == 'testing':
@@ -53,7 +56,7 @@ class AccountMove(models.Model):
         return sRet
 
     # Buttons
-    def _post(self, soft=True):
+    def _old__post(self, soft=True):
         py_invoices = self.filtered(lambda x: x.is_invoice() and x.country_code == "PY")
         sale_py_invoices = py_invoices.filtered(lambda x: x.move_type in ['out_invoice', 'out_refund'])
 
@@ -65,21 +68,32 @@ class AccountMove(models.Model):
         validated = error_invoice = self.env['account.move']
         for inv in py_edi_invoices:
 
-            validated += super(AccountMove, inv)._post(soft=soft)
+            #validated += super(AccountMove, inv)._post(soft=soft)
+            validated += super(AccountMove, inv)._post(soft=False)
+            self.button_draft()
 
             ### La llamada a la SET
             #return_info = inv._l10n_ar_do_afip_ws_request_cae(client, auth, transport)
             return_info = inv._l10n_py_do_dnit_ws_request()
             if return_info:
+                
                 _logger.error( "Error de la SET: %s" % str(inv.l10n_py_dnit_ws_request_json))
                 error_invoice = inv
                 validated -= inv
                 break
 
+            if inv.l10n_py_dnit_ws_response_estres != 'L':
+                validated += super(AccountMove, inv)._post(soft=soft)
+            else:
+                # Ocultar el boton Confirmar
+                # Mostrar un nuevo boton de verificacion de la set
+                a =1
+
             # If we get CAE from AFIP then we make commit because we need to save the information returned by AFIP
             # in Odoo for consistency, this way if an error ocurrs later in another invoice we will have the ones
             # correctly validated in AFIP in Odoo (CAE, Result, xml response/request).
             #if not self.env.context.get('l10n_py_invoice_skip_commit'):
+            validated += super(AccountMove, inv)._post(soft=soft)
             self._cr.commit()
 
         if error_invoice:
@@ -113,7 +127,7 @@ class AccountMove(models.Model):
         return validated + super(AccountMove, self - py_edi_invoices)._post(soft=soft)
 
 
-    def _l10n_py_do_dnit_ws_request(self):
+    def _old_l10n_py_do_dnit_ws_request(self):
         """ Submits the invoice information to DNIT and gets a response of DNIT in return.
 
         If we receive a positive response from  DNIT then validate the invoice and save the returned information in the
@@ -133,7 +147,7 @@ class AccountMove(models.Model):
         """
         ##all_data = self._prepare_l10n_py_ws_data()
         all_data = libpyedi.get_xmlgen_DE(self)
-        self.l10n_py_dnit_ws_request_json = all_data
+        self.l10n_py_dnit_ws_request_json = json.dumps(all_data, indent=2)
         response = requests.post(
             self._get_l10n_py_dnit_ws_url("recibe"),  json=json.loads(json.dumps(all_data)), allow_redirects=False)
         if response.status_code == 301:
@@ -159,12 +173,12 @@ class AccountMove(models.Model):
         self.l10n_py_dnit_ws_response_codres = None
         self.l10n_py_dnit_ws_response_msgres = None
         self.l10n_py_dnit_ws_request_xml = None
-        self.l10n_py_dnit_ws_response_json = response.text
+        self.l10n_py_dnit_ws_response_json =  json.dumps(json.loads(response.text) , indent=2)   #  json.dumps(response.text, indent=2) 
         self.l10n_py_dnit_qr = None
         return self._py_json_responseDNIT( response.text)
 
 
-    def _py_json_responseDNIT( self, response_data):
+    def _old_py_json_responseDNIT( self, response_data):
         """
         Process the response from the DNIT
         """
@@ -192,11 +206,15 @@ class AccountMove(models.Model):
             return response_value
 
         self.l10n_py_dnit_ws_response_cdc = response_value.get('dId')
-        self.l10n_py_dnit_ws_response_fecproc = datetime.strptime(str(response_value.get('dFecProc')), "%Y-%m-%dT%H:%M:%S")  
+        self.l10n_py_dnit_ws_response_fecproc = datetime.strptime(str(response_value.get('dFecProc'))[:19], "%Y-%m-%dT%H:%M:%S")  
         self.l10n_py_dnit_ws_response_estres = response_value.get('dEstRes')
         self.l10n_py_dnit_ws_response_codres = response_value.get('dCodRes')
         self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
         self.l10n_py_dnit_ws_response_protaut = response_value.get('dProtAut')
+        #
+        self.l10n_py_dnit_ws_response_protconslote = response_value.get('dProtConsLote')
+        self.l10n_py_dnit_ws_response_tpoproces = response_value.get('dTpoProces')
+
 
         self.l10n_py_dnit_qr = response_value.get('qr')
 
@@ -206,7 +224,142 @@ class AccountMove(models.Model):
 
         msg = "Success: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
         return False
+    #########
 
+    # Buttons
+    def _post(self, soft=True):
+        py_invoices = self.filtered(lambda x: x.is_invoice() and x.country_code == "PY")
+        sale_py_invoices = py_invoices.filtered(lambda x: x.move_type in ['out_invoice', 'out_refund'])
+
+        # Send invoices to DNIT and get the return info
+        py_edi_invoices = py_invoices.filtered(lambda x: x.journal_id.l10n_py_dnit_pos_system in ('RLI_RLM','AURLI_RLM','BFERCEL','FEERCEL','CPERCEL'))
+        validated = error_invoice = self.env['account.move']
+        for inv in py_edi_invoices:
+
+            validated += super(AccountMove, inv)._post(soft=soft)
+            #self.button_draft()
+
+            ### La llamada a la SET
+            return_info = inv._l10n_py_do_dnit_ws_request()
+            if return_info:
+                
+                _logger.error( "Error de la SET: %s" % str(inv.l10n_py_dnit_ws_request_json))
+                error_invoice = inv
+                validated -= inv
+                break
+
+            if inv.l10n_py_dnit_ws_response_estres != 'L':
+                validated += super(AccountMove, inv)._post(soft=soft)
+            else:
+                # Ocultar el boton Confirmar
+                # Mostrar un nuevo boton de verificacion de la set
+                a =1
+
+            # If we get CAE from AFIP then we make commit because we need to save the information returned by AFIP
+            # in Odoo for consistency, this way if an error ocurrs later in another invoice we will have the ones
+            # correctly validated in AFIP in Odoo (CAE, Result, xml response/request).
+            #if not self.env.context.get('l10n_py_invoice_skip_commit'):
+            self._cr.commit()
+
+        if error_invoice:
+            if error_invoice.exists():
+                msg = _('No pudimos validar el documento "%(partner_name)s" (Borrador de factura *%(invoice)s) en la DNIT',
+                    partner_name=error_invoice.partner_id.name, invoice=error_invoice.id)
+            else:
+                msg = _('No pudimos validar la factura en la DNIT.')
+            msg += _('Esto es lo que obtenemos:\n%s\n\nRealice las correcciones necesarias y vuelva a intentarlo.', str(return_info) + self.l10n_latam_document_number)
+
+            # if we've already validate any invoice, we've commit and we want to inform which invoices were validated
+            # which one were not and the detail of the error we get. This ins neccesary because is not usual to have a
+            # raise with changes commited on databases
+            if validated:
+                unprocess = self - validated - error_invoice
+                msg = "Algunos documentos fueron validados en la DNIT pero como tenemos un error con un documento se detuvo la validación del lote."
+                msg += "\nEstos documentos fueron validados: " + "\n   * ".join(validated.mapped('name'))
+                msg += "\nEstos documentos no fueron validados: " "\n   * ".join([_('%(item)s: "%(partner)s" amount %(amount)s', item=item.display_name, partner=item.partner_id.name, amount=item.amount_total_signed) for item in unprocess])
+				
+            #raise UserError(msg)
+            return {'warning': {
+                'title': "Error",
+                'message': msg }
+			}
+			
+
+        return validated + super(AccountMove, self - py_edi_invoices)._post(soft=soft)
+
+
+    def _l10n_py_do_dnit_ws_request(self):
+
+        all_data = libpyedi.get_xmlgen_DE(self)
+        self.l10n_py_dnit_ws_request_json = json.dumps(all_data, indent=2)
+        response = requests.post(
+            self._get_l10n_py_dnit_ws_url("recibe"),  json=json.loads(json.dumps(all_data)), allow_redirects=False)
+        if response.status_code == 301:
+            response = requests.post( response.headers['Location'],  json=json.loads(json.dumps(all_data)))
+        if response.status_code != 200:
+            _logger.error( "Error: %s" % str(response.status_code))
+            self.l10n_py_dnit_ws_response_estres = 'E'
+            self.l10n_py_dnit_ws_response_fecproc = datetime.now()
+            self.l10n_py_dnit_ws_response_cdc = None
+            self.l10n_py_dnit_ws_response_digval = None
+            self.l10n_py_dnit_ws_response_protaut = None
+            self.l10n_py_dnit_ws_response_codres = str(response.status_code)
+            self.l10n_py_dnit_ws_response_msgres = response.text
+            self.l10n_py_dnit_ws_request_xml = None
+            self.l10n_py_dnit_ws_response_json = None
+            self.l10n_py_dnit_qr = None
+            self.message_post( body=_("Error %s en la transmision a la DNIT", str(response.status_code) + "-" + response.text ))
+            return str(response.status_code) + "-" + response.text
+
+        self.l10n_py_dnit_ws_response_json =  json.dumps(json.loads(response.text) , indent=2)   #  json.dumps(response.text, indent=2) 
+        return self._py_json_responseDNIT( response.text)
+		
+    def _py_json_responseDNIT( self, response_data):
+        response = response_data
+        self.l10n_py_dnit_ws_response_fecproc = datetime.now()
+
+        ## Procesar en base al tipo de respuesta
+		## Sincronico, actualizar las variables, confirmar la factura (si esta toodook) y salir
+		
+		## Asincronico, guardar los valores del lote, confirmar la factua (si esta todo ok) y salir
+		
+		## Asincronico, revisar que no haya erores en la consulat que se hace posterior a la generacion del lote (en otro momento)
+		## Si hubo errores, volver la factura atras
+
+
+        response_value = libpydnitws.process_response_dnit( response)
+        if response_value.get('dEstRes') == 'E':
+            self.l10n_py_dnit_ws_response_estres = 'E'
+            self.l10n_py_dnit_ws_response_codres = response_value.get('dCodRes')
+            self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
+            msg = "Error: " + str(response_value.get('dCodRes')) + " " + str(response_value.get('dMsgRes')) + "\n"
+            msg += json.dumps(response_value, indent=2)
+            self.message_post(body=msg, message_type='notification')
+            self.button_draft()
+            return response_value
+
+        self.l10n_py_dnit_ws_response_fecproc = datetime.strptime(str(response_value.get('dFecProc'))[:19], "%Y-%m-%dT%H:%M:%S")  
+        self.l10n_py_dnit_ws_response_estres = response_value.get('dEstRes')
+        self.l10n_py_dnit_ws_response_codres = response_value.get('dCodRes')
+        self.l10n_py_dnit_ws_response_msgres = response_value.get('dMsgRes')
+        self.l10n_py_dnit_ws_response_protaut = response_value.get('dProtAut')
+        #
+        self.l10n_py_dnit_ws_response_protconslote = response_value.get('dProtConsLote')
+        self.l10n_py_dnit_ws_response_tpoproces = response_value.get('dTpoProces')
+        self.l10n_py_dnit_qr = response_value.get('qr')
+        self.l10n_py_dnit_ws_response_cdc = response_value.get('cdc')
+
+        if response_value.get('dEstRes') == None or response_value.get('dEstRes') == 'R':
+            msg = "Warning: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
+            self.button_draft()
+            return response_value
+
+        msg = "Success: Documento " + str(response_value.get('dEstResDet')) + "\n[" + str(response_value.get('dCodRes')) + "-" + str(response_value.get('dMsgRes')) + "] "
+        return False
+
+
+
+    #########
     @api.depends('l10n_py_dnit_ws_response_estres')
     def _compute_show_reset_to_draft_button(self):
         """

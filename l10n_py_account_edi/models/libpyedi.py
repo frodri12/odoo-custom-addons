@@ -664,8 +664,9 @@ def get_xmlgen_DE(moveId:AccountMove):
     params.update({"timbradoFecha":gTimb.get("dFecIniT")})
 
     params.update({"tipoContribuyente":gEmis.get("iTipCont")})
-    if gEmis.get("cTipReg") and gEmis.get("cTipReg") != None:
-        params.update({"tipoRegimen":gEmis.get("cTipReg")})
+    cTipReg = gEmis.get("cTipReg")
+    if cTipReg and cTipReg != None and cTipReg > 0:
+        params.update({"tipoRegimen": cTipReg})
       
     establecimiento = {}
     establecimiento.update({"codigo":gTimb.get("dEst")})
