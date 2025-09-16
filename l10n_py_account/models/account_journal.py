@@ -224,4 +224,6 @@ class AccountJournal(models.Model):
     l10n_py_dnit_timbrado_start_date_test = fields.Date(string="Fecha de inicio dell timbrado (TEST)")
     l10n_py_dnit_timbrado_end_date = fields.Date(string="Fecha de fin dell timbrado (PROD)")
     l10n_py_dnit_timbrado_end_date_test = fields.Date(string="Fecha de fin dell timbrado (TEST)")
+
+    l10n_py_dnit_timbrado_auth = fields.Char(string="Número de autorizacion del Timbrado")
     
